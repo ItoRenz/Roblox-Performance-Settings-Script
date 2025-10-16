@@ -1,5 +1,5 @@
 -- ============================================
--- ROBLOX PERFORMANCE SETTINGS SCRIPT
+-- ROBLOX PERFORMANCE SETTINGS SCRIPT (FIXED)
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
 -- ============================================
@@ -9,12 +9,12 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-repeat task.wait() until Workspace.CurrentCamera
+-- Wait for camera more efficiently
+local camera = Workspace.CurrentCamera or Workspace:GetPropertyChangedSignal("CurrentCamera"):Wait()
 
 -- ============================================
 -- CONFIGURATION
@@ -25,7 +25,6 @@ local isMobile = UserInputService.TouchEnabled and not UserInputService.Keyboard
 local QUALITY_PRESETS = {
 	Low = { 
 		renderDistance = 250,
-		qualityLevel = Enum.QualityLevel.Level01,
 		shadowsEnabled = false,
 		particlesEnabled = false,
 		postProcessing = false,
@@ -33,7 +32,6 @@ local QUALITY_PRESETS = {
 		fogStart = 0,
 		fogEnd = 250,
 		brightness = 1.5,
-		meshDetail = Enum.MeshPartDetailLevel.Level01,
 		technology = Enum.Technology.Legacy,
 		castShadow = false,
 		environmentSpecularScale = 0,
@@ -44,7 +42,6 @@ local QUALITY_PRESETS = {
 	},
 	Medium = { 
 		renderDistance = 800,
-		qualityLevel = Enum.QualityLevel.Level08,
 		shadowsEnabled = true,
 		particlesEnabled = true,
 		postProcessing = false,
@@ -52,7 +49,6 @@ local QUALITY_PRESETS = {
 		fogStart = 0,
 		fogEnd = 100000,
 		brightness = 2,
-		meshDetail = Enum.MeshPartDetailLevel.Level01,
 		technology = Enum.Technology.ShadowMap,
 		castShadow = true,
 		environmentSpecularScale = 0.3,
@@ -63,7 +59,6 @@ local QUALITY_PRESETS = {
 	},
 	High = { 
 		renderDistance = 1500,
-		qualityLevel = Enum.QualityLevel.Level15,
 		shadowsEnabled = true,
 		particlesEnabled = true,
 		postProcessing = true,
@@ -71,7 +66,6 @@ local QUALITY_PRESETS = {
 		fogStart = 0,
 		fogEnd = 100000,
 		brightness = 2.5,
-		meshDetail = Enum.MeshPartDetailLevel.Level02,
 		technology = Enum.Technology.Future,
 		castShadow = true,
 		environmentSpecularScale = 0.7,
@@ -82,7 +76,6 @@ local QUALITY_PRESETS = {
 	},
 	Ultra = { 
 		renderDistance = 2500,
-		qualityLevel = Enum.QualityLevel.Level21,
 		shadowsEnabled = true,
 		particlesEnabled = true,
 		postProcessing = true,
@@ -90,7 +83,6 @@ local QUALITY_PRESETS = {
 		fogStart = 0,
 		fogEnd = 100000,
 		brightness = 3,
-		meshDetail = Enum.MeshPartDetailLevel.DistanceBased,
 		technology = Enum.Technology.Future,
 		castShadow = true,
 		environmentSpecularScale = 1,
@@ -108,14 +100,14 @@ local COLORS = {
 	Ultra = Color3.fromRGB(138, 43, 226)
 }
 
-local lastQuality = "Medium"
+local currentQuality = "Medium"
 
 -- ============================================
--- FUNCTIONS
+-- UTILITY FUNCTIONS
 -- ============================================
 
 local function saveQuality(qualityName)
-	lastQuality = qualityName
+	currentQuality = qualityName
 	pcall(function()
 		player:SetAttribute("PreferredQuality", qualityName)
 	end)
@@ -125,13 +117,34 @@ local function getLastQuality()
 	local success, saved = pcall(function()
 		return player:GetAttribute("PreferredQuality")
 	end)
-	return (success and saved and QUALITY_PRESETS[saved]) and saved or lastQuality
+	return (success and saved and QUALITY_PRESETS[saved]) and saved or currentQuality
 end
 
+-- Debounce helper
+local function debounce(func, wait)
+	local lastCall = 0
+	return function(...)
+		local now = tick()
+		if now - lastCall >= wait then
+			lastCall = now
+			return func(...)
+		end
+	end
+end
+
+-- ============================================
+-- PERFORMANCE SETTINGS APPLICATION
+-- ============================================
+
 local isApplying = false
+local applyQueue = nil
 
 local function applyPerformanceSettings(qualityName)
-	if isApplying then return end
+	-- Queue system to prevent spam
+	if isApplying then
+		applyQueue = qualityName
+		return
+	end
 	
 	local preset = QUALITY_PRESETS[qualityName]
 	if not preset then return end
@@ -142,148 +155,200 @@ local function applyPerformanceSettings(qualityName)
 	print("🎮 Applying " .. qualityName:upper() .. " Graphics Settings")
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	
-	-- Quality Level
-	pcall(function()
-		settings().Rendering.QualityLevel = preset.qualityLevel
-		settings().Rendering.MeshPartDetailLevel = preset.meshDetail
-		print("✓ Quality Level: " .. tostring(preset.qualityLevel))
-		print("✓ Mesh Detail: " .. tostring(preset.meshDetail))
-	end)
-	
 	-- Render Distance
-	pcall(function()
-		player.CameraMaxZoomDistance = preset.renderDistance
-		player.CameraMinZoomDistance = 0.5
-		print("✓ Render Distance: " .. preset.renderDistance)
+	local distanceSuccess = pcall(function()
+		if player.Character then
+			player.CameraMaxZoomDistance = preset.renderDistance
+			player.CameraMinZoomDistance = 0.5
+		end
 	end)
+	if distanceSuccess then
+		print("✓ Render Distance: " .. preset.renderDistance)
+	end
 	
 	-- Lighting
-	pcall(function()
+	local lightingSuccess = pcall(function()
 		Lighting.Technology = preset.technology
 		Lighting.GlobalShadows = preset.shadowsEnabled
 		Lighting.EnvironmentSpecularScale = preset.environmentSpecularScale
 		Lighting.EnvironmentDiffuseScale = preset.environmentDiffuseScale
 		Lighting.Brightness = preset.brightness
-		Lighting.Ambient = Color3.fromRGB(preset.ambientIntensity * 255, preset.ambientIntensity * 255, preset.ambientIntensity * 255)
+		Lighting.Ambient = Color3.new(preset.ambientIntensity, preset.ambientIntensity, preset.ambientIntensity)
 		Lighting.OutdoorAmbient = preset.outdoorAmbient
-		print("✓ Lighting: " .. tostring(preset.technology))
-		print("✓ Ambient Intensity: " .. preset.ambientIntensity)
 	end)
+	if lightingSuccess then
+		print("✓ Lighting: " .. tostring(preset.technology))
+		print("✓ Shadows: " .. (preset.shadowsEnabled and "ON" or "OFF"))
+	end
 	
-	-- Part Shadows & Reflectance
+	-- Part Shadows & Reflectance (Optimized with batch processing)
 	task.spawn(function()
 		local partsProcessed = 0
-		for _, obj in ipairs(Workspace:GetDescendants()) do
-			if obj:IsA("BasePart") then
-				pcall(function() 
-					obj.CastShadow = preset.castShadow 
-					-- Set reflectance for materials that support it
-					if obj.Material ~= Enum.Material.Plastic and obj.Material ~= Enum.Material.SmoothPlastic then
-						obj.Reflectance = preset.reflectance
+		local batchSize = 100
+		local parts = {}
+		
+		-- Collect parts first
+		local collectSuccess = pcall(function()
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("BasePart") then
+					table.insert(parts, obj)
+				end
+			end
+		end)
+		
+		if not collectSuccess then
+			warn("⚠ Could not collect parts for processing")
+			return
+		end
+		
+		-- Process in batches
+		for i = 1, #parts, batchSize do
+			for j = i, math.min(i + batchSize - 1, #parts) do
+				local part = parts[j]
+				pcall(function()
+					if part and part.Parent then
+						part.CastShadow = preset.castShadow
+						if part.Material ~= Enum.Material.Plastic and part.Material ~= Enum.Material.SmoothPlastic then
+							part.Reflectance = preset.reflectance
+						end
 					end
 				end)
 				partsProcessed = partsProcessed + 1
 			end
+			if i % 500 == 0 then
+				task.wait() -- Yield periodically to prevent lag
+			end
 		end
-		print("✓ Part Shadows: " .. (preset.castShadow and "ON" or "OFF"))
-		print("✓ Reflectance Level: " .. (preset.reflectance * 100) .. "%")
+		
 		print("✓ Parts Processed: " .. partsProcessed)
+		print("✓ Shadows: " .. (preset.castShadow and "ON" or "OFF") .. " | Reflectance: " .. (preset.reflectance * 100) .. "%")
 	end)
 	
 	-- Particles
 	task.spawn(function()
-		for _, obj in ipairs(Workspace:GetDescendants()) do
-			if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-				pcall(function() obj.Enabled = preset.particlesEnabled end)
+		local particleCount = 0
+		local particleSuccess = pcall(function()
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+					pcall(function() 
+						if obj and obj.Parent then
+							obj.Enabled = preset.particlesEnabled 
+						end
+					end)
+					particleCount = particleCount + 1
+				end
 			end
+		end)
+		if particleSuccess then
+			print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF") .. " (" .. particleCount .. " emitters)")
 		end
-		print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF"))
 	end)
 	
-	-- Post Processing
-	pcall(function()
+	-- Post Processing (Cleaned up with better error handling)
+	local postProcessSuccess = pcall(function()
+		-- Remove ALL existing post effects
 		for _, effect in ipairs(Lighting:GetChildren()) do
-			if effect:IsA("PostEffect") then effect:Destroy() end
+			if effect:IsA("PostEffect") or effect:IsA("Atmosphere") then
+				pcall(function() effect:Destroy() end)
+			end
 		end
 		
 		if preset.postProcessing then
-			-- Bloom (Different intensity per quality)
-			local bloom = Instance.new("BloomEffect")
-			bloom.Intensity = qualityName == "Ultra" and 1 or 0.5
-			bloom.Size = qualityName == "Ultra" and 56 or 32
-			bloom.Threshold = qualityName == "Ultra" and 1 or 1.8
-			bloom.Parent = Lighting
+			-- Bloom
+			pcall(function()
+				local bloom = Instance.new("BloomEffect")
+				bloom.Intensity = qualityName == "Ultra" and 1 or 0.5
+				bloom.Size = qualityName == "Ultra" and 56 or 32
+				bloom.Threshold = qualityName == "Ultra" and 1 or 1.8
+				bloom.Parent = Lighting
+			end)
 			
-			-- SunRays (Only High and Ultra)
-			local sunrays = Instance.new("SunRaysEffect")
-			sunrays.Intensity = qualityName == "Ultra" and 0.08 or 0.04
-			sunrays.Spread = qualityName == "Ultra" and 1 or 0.7
-			sunrays.Parent = Lighting
-			
-			-- Color Correction (High and Ultra)
-			local colorCorrection = Instance.new("ColorCorrectionEffect")
-			colorCorrection.Brightness = qualityName == "Ultra" and 0.05 or 0.02
-			colorCorrection.Contrast = qualityName == "Ultra" and 0.2 or 0.1
-			colorCorrection.Saturation = qualityName == "Ultra" and 0.2 or 0.1
-			colorCorrection.TintColor = qualityName == "Ultra" and Color3.fromRGB(255, 250, 240) or Color3.fromRGB(255, 255, 255)
-			colorCorrection.Parent = Lighting
-			
-			-- Atmosphere (Ultra exclusive - HUGE visual difference)
-			if qualityName == "Ultra" then
-				-- Remove old atmosphere first
-				for _, obj in ipairs(Lighting:GetChildren()) do
-					if obj:IsA("Atmosphere") then obj:Destroy() end
-				end
-				
-				local atmosphere = Instance.new("Atmosphere")
-				atmosphere.Density = 0.395
-				atmosphere.Offset = 0.5
-				atmosphere.Color = Color3.fromRGB(199, 199, 199)
-				atmosphere.Decay = Color3.fromRGB(106, 112, 125)
-				atmosphere.Glare = 0.4
-				atmosphere.Haze = 1.8
-				atmosphere.Parent = Lighting
-				
-				-- Depth of Field (Ultra exclusive)
-				local dof = Instance.new("DepthOfFieldEffect")
-				dof.FarIntensity = 0.15
-				dof.FocusDistance = 60
-				dof.InFocusRadius = 40
-				dof.NearIntensity = 0.3
-				dof.Parent = Lighting
-				
-				-- Enhanced Blur for cinematic feel
-				local blur = Instance.new("BlurEffect")
-				blur.Size = 2
-				blur.Parent = Lighting
+			-- SunRays (High and Ultra)
+			if qualityName == "High" or qualityName == "Ultra" then
+				pcall(function()
+					local sunrays = Instance.new("SunRaysEffect")
+					sunrays.Intensity = qualityName == "Ultra" and 0.08 or 0.04
+					sunrays.Spread = qualityName == "Ultra" and 1 or 0.7
+					sunrays.Parent = Lighting
+				end)
 			end
 			
-			print("✓ Post Processing: " .. qualityName .. " quality")
+			-- Color Correction
+			pcall(function()
+				local colorCorrection = Instance.new("ColorCorrectionEffect")
+				colorCorrection.Brightness = qualityName == "Ultra" and 0.05 or 0.02
+				colorCorrection.Contrast = qualityName == "Ultra" and 0.2 or 0.1
+				colorCorrection.Saturation = qualityName == "Ultra" and 0.2 or 0.1
+				colorCorrection.TintColor = qualityName == "Ultra" and Color3.fromRGB(255, 250, 240) or Color3.fromRGB(255, 255, 255)
+				colorCorrection.Parent = Lighting
+			end)
+			
+			-- Ultra-exclusive effects
 			if qualityName == "Ultra" then
-				print("✓ Atmosphere: ENABLED (Ultra)")
-				print("✓ Depth of Field: ENABLED (Ultra)")
+				pcall(function()
+					local atmosphere = Instance.new("Atmosphere")
+					atmosphere.Density = 0.395
+					atmosphere.Offset = 0.5
+					atmosphere.Color = Color3.fromRGB(199, 199, 199)
+					atmosphere.Decay = Color3.fromRGB(106, 112, 125)
+					atmosphere.Glare = 0.4
+					atmosphere.Haze = 1.8
+					atmosphere.Parent = Lighting
+				end)
+				
+				pcall(function()
+					local dof = Instance.new("DepthOfFieldEffect")
+					dof.FarIntensity = 0.15
+					dof.FocusDistance = 60
+					dof.InFocusRadius = 40
+					dof.NearIntensity = 0.3
+					dof.Parent = Lighting
+				end)
+				
+				pcall(function()
+					local blur = Instance.new("BlurEffect")
+					blur.Size = 2
+					blur.Parent = Lighting
+				end)
+				
+				print("✓ Ultra Effects: Atmosphere, DoF, Blur")
 			end
+			
+			print("✓ Post Processing: " .. qualityName)
 		else
 			print("✓ Post Processing: OFF")
 		end
 	end)
 	
+	if not postProcessSuccess then
+		warn("⚠ Some post-processing effects could not be applied")
+	end
+	
 	-- Fog
-	pcall(function()
+	local fogSuccess = pcall(function()
 		Lighting.FogEnabled = preset.fogEnabled
 		if preset.fogEnabled then
 			Lighting.FogStart = preset.fogStart
 			Lighting.FogEnd = preset.fogEnd
 			Lighting.FogColor = Color3.fromRGB(192, 192, 192)
 		end
-		print("✓ Fog: " .. (preset.fogEnabled and "ON" or "OFF"))
 	end)
+	if fogSuccess then
+		print("✓ Fog: " .. (preset.fogEnabled and "ON" or "OFF"))
+	end
 	
 	print("✅ " .. qualityName:upper() .. " Applied!")
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	
 	saveQuality(qualityName)
 	isApplying = false
+	
+	-- Process queued request
+	if applyQueue then
+		local queued = applyQueue
+		applyQueue = nil
+		applyPerformanceSettings(queued)
+	end
 end
 
 -- ============================================
@@ -294,11 +359,13 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PerformanceGui"
 screenGui.Enabled = false
 screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
 local toggleScreenGui = Instance.new("ScreenGui")
 toggleScreenGui.Name = "PerformanceToggle"
 toggleScreenGui.ResetOnSpawn = false
+toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleScreenGui.Parent = playerGui
 
 -- Main Frame
@@ -393,6 +460,7 @@ fpsLabel.Parent = container
 
 -- Quality Buttons
 local qualities = {"Low", "Medium", "High", "Ultra"}
+local buttons = {}
 
 for _, qualityName in ipairs(qualities) do
 	local button = Instance.new("TextButton")
@@ -407,6 +475,8 @@ for _, qualityName in ipairs(qualities) do
 	button.AutoButtonColor = false
 	button.Parent = container
 	
+	buttons[qualityName] = button
+	
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 8)
 	corner.Parent = button
@@ -416,12 +486,18 @@ for _, qualityName in ipairs(qualities) do
 	end)
 	
 	button.MouseLeave:Connect(function()
-		button.BackgroundTransparency = 0.4
+		button.BackgroundTransparency = currentQuality == qualityName and 0.1 or 0.4
 	end)
 	
 	button.MouseButton1Click:Connect(function()
 		applyPerformanceSettings(qualityName)
 		statusLabel.Text = "Current: " .. qualityName
+		
+		-- Update button states
+		for name, btn in pairs(buttons) do
+			btn.BackgroundTransparency = name == qualityName and 0.1 or 0.4
+		end
+		
 		if isMobile then
 			task.wait(0.3)
 			screenGui.Enabled = false
@@ -429,15 +505,16 @@ for _, qualityName in ipairs(qualities) do
 	end)
 end
 
--- Toggle Button (Shifted more to the right)
+-- Toggle Button (Smaller size and positioned at edge)
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = isMobile and UDim2.new(0, 48, 0, 48) or UDim2.new(0, 54, 0, 54)
-toggleButton.Position = isMobile and UDim2.new(1, -18, 0.5, 0) or UDim2.new(1, -24, 0.5, 0)
+toggleButton.Size = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
+toggleButton.Position = isMobile and UDim2.new(1, -20, 0.5, 0) or UDim2.new(1, -22, 0.5, 0)
 toggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+toggleButton.BackgroundTransparency = 0.2
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️"
-toggleButton.TextSize = isMobile and 22 or 26
+toggleButton.TextSize = isMobile and 16 or 18
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = toggleScreenGui
@@ -448,7 +525,8 @@ toggleCorner.Parent = toggleButton
 
 local toggleStroke = Instance.new("UIStroke")
 toggleStroke.Color = Color3.fromRGB(80, 80, 100)
-toggleStroke.Thickness = 2
+toggleStroke.Thickness = isMobile and 1 or 1.5
+toggleStroke.Transparency = 0.3
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
 
@@ -456,14 +534,25 @@ toggleButton.MouseButton1Click:Connect(function()
 	screenGui.Enabled = not screenGui.Enabled
 end)
 
+-- Add hover effect for toggle button
+toggleButton.MouseEnter:Connect(function()
+	toggleButton.BackgroundTransparency = 0
+	toggleStroke.Transparency = 0
+end)
+
+toggleButton.MouseLeave:Connect(function()
+	toggleButton.BackgroundTransparency = 0.2
+	toggleStroke.Transparency = 0.3
+end)
+
 -- ============================================
--- FPS COUNTER
+-- FPS COUNTER (Optimized)
 -- ============================================
 
 local lastUpdate = tick()
 local frameCount = 0
 
-RunService.RenderStepped:Connect(function()
+local fpsConnection = RunService.RenderStepped:Connect(function()
 	frameCount = frameCount + 1
 	local now = tick()
 	
@@ -471,13 +560,9 @@ RunService.RenderStepped:Connect(function()
 		local fps = math.floor(frameCount / (now - lastUpdate))
 		fpsLabel.Text = "FPS: " .. fps
 		
-		if fps >= 55 then
-			fpsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-		elseif fps >= 30 then
-			fpsLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
-		else
-			fpsLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-		end
+		fpsLabel.TextColor3 = fps >= 55 and Color3.fromRGB(100, 255, 100)
+			or fps >= 30 and Color3.fromRGB(255, 200, 100)
+			or Color3.fromRGB(255, 100, 100)
 		
 		frameCount = 0
 		lastUpdate = now
@@ -488,8 +573,9 @@ end)
 -- HOTKEY (Desktop Only)
 -- ============================================
 
+local hotkeyConnection
 if not isMobile then
-	UserInputService.InputBegan:Connect(function(input, processed)
+	hotkeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
 		if processed then return end
 		if input.KeyCode == Enum.KeyCode.G then
 			screenGui.Enabled = not screenGui.Enabled
@@ -498,38 +584,56 @@ if not isMobile then
 end
 
 -- ============================================
--- AUTO-APPLY ON RESPAWN
+-- AUTO-APPLY SYSTEM
 -- ============================================
 
-player.CharacterAdded:Connect(function()
+-- Apply on respawn
+local characterConnection
+characterConnection = player.CharacterAdded:Connect(function()
 	screenGui.Enabled = false
 	task.wait(1)
 	applyPerformanceSettings(getLastQuality())
 end)
 
--- Auto-apply particles for new objects
-Workspace.DescendantAdded:Connect(function(obj)
+-- Auto-apply to new particles (debounced with error handling)
+local handleNewParticle = debounce(function(obj)
+	local preset = QUALITY_PRESETS[currentQuality]
+	if preset and obj and obj.Parent then
+		pcall(function() obj.Enabled = preset.particlesEnabled end)
+	end
+end, 0.1)
+
+local descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
 	if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-		local preset = QUALITY_PRESETS[getLastQuality()]
-		if preset then
-			pcall(function() obj.Enabled = preset.particlesEnabled end)
-		end
+		handleNewParticle(obj)
 	end
 end)
 
 -- Apply on startup
 task.delay(2, function()
 	applyPerformanceSettings(getLastQuality())
+	-- Update button state
+	if buttons[currentQuality] then
+		buttons[currentQuality].BackgroundTransparency = 0.1
+	end
 end)
 
 -- ============================================
 -- CLEANUP
 -- ============================================
 
-Players.PlayerRemoving:Connect(function(removingPlayer)
+local function cleanup()
+	if fpsConnection then fpsConnection:Disconnect() end
+	if hotkeyConnection then hotkeyConnection:Disconnect() end
+	if characterConnection then characterConnection:Disconnect() end
+	if descendantConnection then descendantConnection:Disconnect() end
+	if screenGui then screenGui:Destroy() end
+	if toggleScreenGui then toggleScreenGui:Destroy() end
+end
+
+local playerRemovingConnection = Players.PlayerRemoving:Connect(function(removingPlayer)
 	if removingPlayer == player then
-		screenGui:Destroy()
-		toggleScreenGui:Destroy()
+		cleanup()
 	end
 end)
 
