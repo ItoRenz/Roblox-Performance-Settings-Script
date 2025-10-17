@@ -1,5 +1,5 @@
 -- ============================================
--- ROBLOX PERFORMANCE SETTINGS SCRIPT (FIXED)
+-- ROBLOX PERFORMANCE SETTINGS SCRIPT (ANIMATED)
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
 -- ============================================
@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -505,7 +506,10 @@ for _, qualityName in ipairs(qualities) do
 	end)
 end
 
--- Toggle Button (Smaller size and positioned at edge)
+-- ============================================
+-- ANIMATED TOGGLE BUTTON
+-- ============================================
+
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
 toggleButton.Position = isMobile and UDim2.new(1, -20, 0.5, 0) or UDim2.new(1, -22, 0.5, 0)
@@ -530,20 +534,172 @@ toggleStroke.Transparency = 0.3
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
 
+-- Animation variables
+local isHovering = false
+local pulseConnection
+local breathingConnection
+
+-- Pulse effect (glow)
+local function startPulseEffect()
+	if pulseConnection then return end
+	
+	local strokeCopy = Instance.new("UIStroke")
+	strokeCopy.Color = Color3.fromRGB(100, 180, 255)
+	strokeCopy.Thickness = 0
+	strokeCopy.Transparency = 1
+	strokeCopy.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	strokeCopy.Parent = toggleButton
+	
+	pulseConnection = RunService.Heartbeat:Connect(function()
+		local time = tick() * 2
+		local pulse = (math.sin(time) + 1) / 2
+		
+		strokeCopy.Thickness = 2 + (pulse * 3)
+		strokeCopy.Transparency = 0.3 + (pulse * 0.5)
+	end)
+end
+
+local function stopPulseEffect()
+	if pulseConnection then
+		pulseConnection:Disconnect()
+		pulseConnection = nil
+	end
+	
+	for _, child in ipairs(toggleButton:GetChildren()) do
+		if child:IsA("UIStroke") and child ~= toggleStroke then
+			child:Destroy()
+		end
+	end
+end
+
+-- Breathing animation (size)
+local function startBreathingAnimation()
+	if breathingConnection then return end
+	
+	local baseSize = toggleButton.Size
+	
+	breathingConnection = RunService.Heartbeat:Connect(function()
+		local time = tick() * 1.5
+		local breath = (math.sin(time) * 0.08) + 1
+		
+		toggleButton.Size = UDim2.new(
+			baseSize.X.Scale * breath,
+			baseSize.X.Offset * breath,
+			baseSize.Y.Scale * breath,
+			baseSize.Y.Offset * breath
+		)
+	end)
+end
+
+local function stopBreathingAnimation()
+	if breathingConnection then
+		breathingConnection:Disconnect()
+		breathingConnection = nil
+		
+		toggleButton.Size = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
+	end
+end
+
+-- Toggle scale animation
+local function animateToggleScale(scale, duration)
+	local tweenInfo = TweenInfo.new(
+		duration or 0.15,
+		Enum.EasingStyle.Back,
+		Enum.EasingDirection.Out
+	)
+	
+	local baseSize = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
+	local targetSize = UDim2.new(
+		baseSize.X.Scale,
+		baseSize.X.Offset * scale,
+		baseSize.Y.Scale,
+		baseSize.Y.Offset * scale
+	)
+	
+	local tween = TweenService:Create(toggleButton, tweenInfo, {
+		Size = targetSize
+	})
+	tween:Play()
+end
+
+-- Click animation
 toggleButton.MouseButton1Click:Connect(function()
+	-- Stop breathing temporarily
+	local wasBreathing = breathingConnection ~= nil
+	if wasBreathing then
+		stopBreathingAnimation()
+	end
+	
+	-- Click animation sequence
+	animateToggleScale(0.85, 0.08)
+	task.wait(0.08)
+	animateToggleScale(1.15, 0.12)
+	task.wait(0.12)
+	animateToggleScale(1, 0.1)
+	
+	-- Resume breathing if it was active
+	if wasBreathing then
+		task.wait(0.1)
+		startBreathingAnimation()
+	end
+	
 	screenGui.Enabled = not screenGui.Enabled
 end)
 
--- Add hover effect for toggle button
+-- Hover effects
 toggleButton.MouseEnter:Connect(function()
-	toggleButton.BackgroundTransparency = 0
-	toggleStroke.Transparency = 0
+	isHovering = true
+	
+	-- Smooth transition
+	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	
+	local bgTween = TweenService:Create(toggleButton, tweenInfo, {
+		BackgroundTransparency = 0,
+		BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+	})
+	
+	local strokeTween = TweenService:Create(toggleStroke, tweenInfo, {
+		Transparency = 0,
+		Color = Color3.fromRGB(120, 150, 255)
+	})
+	
+	bgTween:Play()
+	strokeTween:Play()
+	
+	-- Start animations
+	stopBreathingAnimation()
+	startPulseEffect()
+	animateToggleScale(1.1, 0.2)
 end)
 
 toggleButton.MouseLeave:Connect(function()
-	toggleButton.BackgroundTransparency = 0.2
-	toggleStroke.Transparency = 0.3
+	isHovering = false
+	
+	-- Smooth transition back
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	
+	local bgTween = TweenService:Create(toggleButton, tweenInfo, {
+		BackgroundTransparency = 0.2,
+		BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	})
+	
+	local strokeTween = TweenService:Create(toggleStroke, tweenInfo, {
+		Transparency = 0.3,
+		Color = Color3.fromRGB(80, 80, 100)
+	})
+	
+	bgTween:Play()
+	strokeTween:Play()
+	
+	-- Stop pulse, start breathing
+	stopPulseEffect()
+	animateToggleScale(1, 0.2)
+	task.wait(0.2)
+	startBreathingAnimation()
 end)
+
+-- Start idle breathing animation
+startBreathingAnimation()
 
 -- ============================================
 -- FPS COUNTER (Optimized)
@@ -627,6 +783,8 @@ local function cleanup()
 	if hotkeyConnection then hotkeyConnection:Disconnect() end
 	if characterConnection then characterConnection:Disconnect() end
 	if descendantConnection then descendantConnection:Disconnect() end
+	if pulseConnection then pulseConnection:Disconnect() end
+	if breathingConnection then breathingConnection:Disconnect() end
 	if screenGui then screenGui:Destroy() end
 	if toggleScreenGui then toggleScreenGui:Destroy() end
 end
@@ -638,7 +796,8 @@ local playerRemovingConnection = Players.PlayerRemoving:Connect(function(removin
 end)
 
 print("═══════════════════════════════════════")
-print("🎮 Performance Settings Loaded")
+print("🎮 Performance Settings Loaded (ANIMATED)")
 print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
 print(isMobile and "📌 Tap ⚙️ to open settings" or "📌 Press G or click ⚙️")
+print("✨ Animations: Pulse, Breathing, Hover")
 print("═══════════════════════════════════════")
