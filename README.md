@@ -1,243 +1,250 @@
-# ⚡ Roblox Performance Settings Script
+# 🎮 Roblox Performance Settings Script
 
-A comprehensive, user-friendly graphics settings manager for Roblox games. Give players full control over their visual experience with 4 optimized quality presets, real-time FPS monitoring, and an elegant UI that works seamlessly on both desktop and mobile.
+A comprehensive graphics quality management script for Roblox games with a sleek GUI interface. This script allows players to adjust visual settings in real-time to optimize their gameplay experience based on their device capabilities.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Roblox](https://img.shields.io/badge/roblox-compatible-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Roblox](https://img.shields.io/badge/Platform-Roblox-blue.svg)](https://www.roblox.com/)
+[![Lua](https://img.shields.io/badge/Language-Lua-purple.svg)](https://www.lua.org/)
 
 ## ✨ Features
 
-### 🎮 Four Quality Presets
-- **Low** - Maximum performance for low-end devices
-- **Medium** - Balanced graphics and performance
-- **High** - Enhanced visuals with good performance
-- **Ultra** - Cinematic quality with all effects enabled
+### 🎨 Four Quality Presets
+- **Low** - Optimized for low-end devices and maximum FPS
+- **Medium** - Balanced performance and visuals
+- **High** - Enhanced graphics for capable devices
+- **Cinematic** - Premium visual experience with advanced effects
+
+### 🔧 Comprehensive Graphics Control
+- **Render Distance** - Adjustable camera zoom distance
+- **Shadow System** - Global and per-part shadow control
+- **Particle Effects** - Dynamic particle emitter management
+- **Post-Processing** - Bloom, SunRays, Color Correction, DoF, and more
+- **Lighting Technology** - Legacy, ShadowMap, and Future lighting
+- **Fog System** - Distance-based fog effects
+- **Reflectance** - Material reflectivity adjustment
+- **Ambient Lighting** - Environment lighting customization
 
 ### 📊 Real-Time Monitoring
-- Live FPS counter with color-coded performance indicators
-- Automatic quality persistence across game sessions
-- Visual feedback for current settings
+- **FPS Counter** - Live frame rate display with color-coded performance
+- **Status Indicator** - Current quality preset display
 
-### 🎨 Advanced Graphics Control
-- Dynamic render distance adjustment (250-2500 studs)
-- Quality levels from 1-21
-- Shadow and lighting technology switching
-- Particle effects management
-- Post-processing effects (Bloom, SunRays, Color Correction)
-- Atmospheric effects (Ultra only)
-- Depth of Field (Ultra only)
-- Material reflectance control
-- Ambient lighting customization
+### 💾 Quality Persistence
+- Automatically saves and restores user preferences
+- Settings persist across respawns
 
 ### 📱 Cross-Platform Support
-- Responsive UI for desktop and mobile
-- Touch-optimized interface for mobile devices
-- Keyboard shortcut (G key) for desktop users
-- Adaptive sizing and positioning
+- **Desktop**: Hotkey (G) and click-to-toggle
+- **Mobile**: Touch-optimized UI with scaled controls
+- Auto-detection of device type
 
-### 🎯 User Experience
-- Sleek, modern dark-themed interface
-- Color-coded quality buttons
-- Smooth animations and hover effects
-- Auto-hide on mobile after selection
-- Settings toggle button always accessible
+### ⚡ Performance Optimizations
+- Batch processing for large-scale object modifications
+- Debounced event handlers to prevent lag
+- Queue system for setting changes
+- Efficient FPS calculation
+- Yielding during intensive operations
 
 ## 📥 Installation
 
-### Method 1: Direct Script
-1. Open Roblox Studio
-2. Navigate to `StarterPlayer` > `StarterPlayerScripts`
+### Method 1: Direct Insertion
+1. Open your Roblox game in Roblox Studio
+2. Navigate to `StarterPlayer` → `StarterPlayerScripts`
 3. Create a new `LocalScript`
 4. Copy and paste the entire script code
 5. Rename the script to `PerformanceSettings` (optional)
-6. Save and publish your game
+6. Test in Play mode
 
-### Method 2: Model Insert
-1. Get the model from Roblox Library (if published)
-2. Insert into your game
-3. The script will automatically be placed in `StarterPlayerScripts`
+### Method 2: Model Import
+1. Download the script file
+2. In Roblox Studio, go to `View` → `Toolbox`
+3. Click `Import 3D` or use `File` → `Insert from File`
+4. Select the downloaded file
+5. Move the script to `StarterPlayer` → `StarterPlayerScripts`
 
-## 🎮 Usage
+## 🎯 Usage
 
-### For Players
+### For Desktop Players
+- **Open Settings**: Press `G` key or click the ⚙️ button on the right edge
+- **Select Quality**: Click on Low, Medium, High, or Cinematic
+- **Close Menu**: Click the ✕ button or press `G` again
 
-#### Desktop
-- Press **G** key to open/close settings menu
-- Click the **⚙️** button on the right side of screen
-- Select your preferred quality preset
-- Monitor your FPS in real-time
+### For Mobile Players
+- **Open Settings**: Tap the ⚙️ button on the right edge
+- **Select Quality**: Tap on your desired quality preset
+- **Auto-Close**: Menu automatically closes after selection
 
-#### Mobile
-- Tap the **⚙️** button on the right edge
-- Select quality preset (menu auto-closes)
-- Check FPS at the top of the settings panel
+### Quality Preset Details
 
-### For Developers
+| Preset | Render Distance | Shadows | Particles | Post-Processing | Best For |
+|--------|----------------|---------|-----------|-----------------|----------|
+| **Low** | 250 studs | ❌ | ❌ | ❌ | Low-end devices, maximum FPS |
+| **Medium** | 800 studs | ✅ | ✅ | ❌ | Balanced gameplay |
+| **High** | 1500 studs | ✅ | ✅ | ✅ | High-performance PCs |
+| **Cinematic** | 2500 studs | ✅ | ✅ | ✅✅ | Screenshots, recordings |
 
-#### Customization
-The script is highly customizable. Key configuration options:
+## ⚙️ Configuration
+
+You can customize the script by modifying the `QUALITY_PRESETS` table:
 
 ```lua
--- Adjust render distances
-renderDistance = 250  -- Minimum distance for Low preset
-
--- Modify quality levels
-qualityLevel = Enum.QualityLevel.Level21  -- Maximum quality
-
--- Toggle features
-shadowsEnabled = true
-particlesEnabled = true
-postProcessing = true
+local QUALITY_PRESETS = {
+    CustomQuality = {
+        renderDistance = 1000,      -- Camera max zoom distance
+        shadowsEnabled = true,       -- Global shadows on/off
+        particlesEnabled = true,     -- Particle emitters on/off
+        postProcessing = false,      -- Post effects on/off
+        fogEnabled = false,          -- Distance fog on/off
+        brightness = 2,              -- Lighting brightness (1-3)
+        technology = Enum.Technology.ShadowMap,
+        castShadow = true,           -- Per-part shadows
+        reflectance = 0.3,           -- Material reflectance (0-1)
+        -- ... other settings
+    }
+}
 ```
 
-#### Hotkey Configuration
-Change the default hotkey (G) by modifying:
+### Customizing Colors
+Modify the `COLORS` table to change button colors:
+
+```lua
+local COLORS = {
+    Low = Color3.fromRGB(255, 100, 100),
+    Medium = Color3.fromRGB(255, 180, 60),
+    High = Color3.fromRGB(100, 200, 100),
+    Cinematic = Color3.fromRGB(138, 43, 226)
+}
+```
+
+### Changing Hotkey (Desktop)
+Find this line and change `Enum.KeyCode.G` to your preferred key:
+
 ```lua
 if input.KeyCode == Enum.KeyCode.G then
-    -- Change to any KeyCode
-end
 ```
 
-## 🔧 Technical Details
+## 🛠️ Technical Details
 
-### Performance Impact by Preset
+### System Requirements
+- **Roblox Studio** version 2019 or later
+- **FilteringEnabled** must be enabled
+- **LocalScript** execution in `StarterPlayerScripts`
 
-| Preset | Render Distance | Quality Level | Shadows | Particles | Post FX | Expected FPS Gain |
-|--------|----------------|---------------|---------|-----------|---------|-------------------|
-| Low    | 250 studs      | Level 01      | ❌      | ❌        | ❌      | +40-60 FPS        |
-| Medium | 800 studs      | Level 08      | ✅      | ✅        | ❌      | +20-30 FPS        |
-| High   | 1500 studs     | Level 15      | ✅      | ✅        | ✅      | Baseline          |
-| Ultra  | 2500 studs     | Level 21      | ✅      | ✅        | ✅✅    | -10-20 FPS        |
+### Services Used
+- `Players` - Player management
+- `RunService` - FPS calculation
+- `UserInputService` - Input detection
+- `Lighting` - Visual effects
+- `Workspace` - Object manipulation
 
-### Graphics Features Breakdown
+### Performance Impact
+- **Low overhead** - Minimal impact on game performance
+- **Optimized loops** - Batch processing prevents lag spikes
+- **Event debouncing** - Prevents excessive function calls
+- **Smart caching** - Reduces redundant operations
 
-#### Low Preset
-- Legacy lighting technology
-- Fog enabled for performance
-- Minimal ambient lighting (30%)
-- No shadows or reflections
-- Ideal for: Mobile devices, low-end PCs
+## 🔍 Troubleshooting
 
-#### Medium Preset
-- ShadowMap technology
-- Basic shadows enabled
-- Particles active
-- 30% reflectance
-- Ideal for: Mid-range devices
+### Common Issues
 
-#### High Preset
-- Future lighting technology
-- Enhanced post-processing
-- Bloom and SunRays effects
-- Color correction
-- 60% reflectance
-- Ideal for: Good gaming PCs
+**Settings not applying:**
+- Ensure the script is in `StarterPlayer` → `StarterPlayerScripts`
+- Check that it's a `LocalScript`, not a regular Script
+- Verify FilteringEnabled is enabled
 
-#### Ultra Preset
-- Maximum quality (Level 21)
-- Full atmospheric system
-- Depth of Field effect
-- Enhanced bloom and blur
-- 100% reflectance
-- Cinematic color grading
-- Ideal for: High-end gaming setups
+**GUI not showing:**
+- Check if PlayerGui is accessible
+- Ensure ResetOnSpawn is set to false
+- Look for errors in Output window
 
-## 🎨 Visual Differences
+**FPS counter stuck:**
+- RenderStepped connection may have failed
+- Check for script errors in Output
 
-### Post-Processing Effects
+**Settings reset on respawn:**
+- This is intentional - settings are reapplied automatically
+- Preferences are saved and restored
 
-**High Quality:**
-- Bloom: Intensity 0.5, Size 32
-- SunRays: Intensity 0.04
-- Color Correction: Subtle enhancement
+## 📝 Changelog
 
-**Ultra Quality:**
-- Bloom: Intensity 1.0, Size 56
-- SunRays: Intensity 0.08
-- Enhanced Color Correction with warm tint
-- Atmosphere with haze and decay
-- Depth of Field for cinematic blur
-- Overall blur for depth perception
-
-## 📋 Requirements
-
-- Roblox Studio (latest version recommended)
-- Game must allow client-side scripts
-- No additional plugins required
-
-## ⚠️ Known Limitations
-
-- Settings reset on game rejoin (by design for performance)
-- Some effects may not work in certain lighting conditions
-- Ultra preset may cause lag on low-end devices
-- Mobile devices may have reduced effect visibility
-
-## 🔄 Auto-Apply Features
-
-The script automatically:
-- Reapplies settings on character respawn
-- Manages new particles added to workspace
-- Saves player's preferred quality
-- Adjusts shadows on new parts
-- Updates reflectance on materials
-
-## 🐛 Troubleshooting
-
-**Settings not applying?**
-- Check if script is in `StarterPlayerScripts`
-- Ensure LocalScript is enabled
-- Check for script errors in Output window
-
-**FPS counter showing "--"?**
-- Wait 0.5 seconds for initial calculation
-- Verify RenderStepped is not blocked
-
-**UI not showing?**
-- Check if ScreenGui is enabled
-- Verify PlayerGui is accessible
-- Press G (desktop) or look for ⚙️ button
-
-**Performance not improving?**
-- Some games have minimum quality settings
-- Server performance may affect overall FPS
-- Check if game has forced quality settings
+### Version 1.0.0 (Current)
+- ✅ Initial release
+- ✅ Four quality presets
+- ✅ Real-time FPS counter
+- ✅ Cross-platform support
+- ✅ Quality persistence
+- ✅ Batch processing optimization
+- ✅ Auto-application on respawn
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
-- Report bugs via Issues
-- Suggest new features
-- Submit pull requests
-- Improve documentation
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create** a new branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** to the branch (`git push origin feature/AmazingFeature`)
+5. **Open** a Pull Request
+
+### Ideas for Contributions
+- Additional quality presets
+- More post-processing effects
+- Advanced graphics settings
+- Settings export/import
+- UI themes
+- Localization support
 
 ## 📄 License
 
-This project is licensed under the MIT License - feel free to use it in your Roblox games!
+This project is licensed under the MIT License - see below for details:
+
+```
+MIT License
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## 💬 Support
+
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/yourusername/roblox-performance-settings/issues)
+- **Discussions**: Ask questions in [Discussions](https://github.com/yourusername/roblox-performance-settings/discussions)
+- **Roblox DevForum**: [Post your questions](https://devforum.roblox.com/)
 
 ## 🌟 Credits
 
-Created with ❤️ for the Roblox developer community
+Created with ❤️ for the Roblox development community
 
-## 📞 Support
+### Special Thanks
+- Roblox Developer Community
+- Contributors and testers
+- Everyone who uses this script
 
-If you encounter any issues or have questions:
-- Open an issue on GitHub
-- Check the troubleshooting section
-- Review Roblox DevForum for similar topics
+## 📚 Resources
 
-## 🔮 Future Updates
-
-Planned features:
-- [ ] Custom preset creation
-- [ ] Graphics benchmarking tool
-- [ ] Auto-quality adjustment based on FPS
-- [ ] More post-processing options
-- [ ] Settings export/import
-- [ ] Admin controls for forced quality
+- [Roblox Developer Hub](https://create.roblox.com/docs)
+- [Roblox API Reference](https://create.roblox.com/docs/reference/engine)
+- [Lighting Effects Guide](https://create.roblox.com/docs/environment/lighting)
+- [Performance Optimization](https://create.roblox.com/docs/optimization)
 
 ---
 
-**⭐ If this script helped your game, consider giving it a star!**
+⭐ **If you find this useful, please consider giving it a star!** ⭐
 
-**Made for Roblox developers who care about player experience** 🎮
+Made for Roblox developers by Roblox developers 🎮
