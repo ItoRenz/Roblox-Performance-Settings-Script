@@ -1,5 +1,5 @@
 -- ============================================
--- ROBLOX PERFORMANCE SETTINGS SCRIPT (ANIMATED)
+-- ROBLOX PERFORMANCE SETTINGS SCRIPT (OPTIMIZED)
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
 -- ============================================
@@ -13,8 +13,6 @@ local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-
--- Wait for camera more efficiently
 local camera = Workspace.CurrentCamera or Workspace:GetPropertyChangedSignal("CurrentCamera"):Wait()
 
 -- ============================================
@@ -25,55 +23,55 @@ local isMobile = UserInputService.TouchEnabled and not UserInputService.Keyboard
 
 local QUALITY_PRESETS = {
 	Low = { 
-		renderDistance = 250,
+		renderDistance = 300,
 		shadowsEnabled = false,
 		particlesEnabled = false,
 		postProcessing = false,
 		fogEnabled = true,
 		fogStart = 0,
-		fogEnd = 250,
-		brightness = 1.5,
+		fogEnd = 300,
+		brightness = 1.8,
 		technology = Enum.Technology.Legacy,
 		castShadow = false,
 		environmentSpecularScale = 0,
-		environmentDiffuseScale = 0,
-		ambientIntensity = 0.3,
-		outdoorAmbient = Color3.fromRGB(100, 100, 100),
+		environmentDiffuseScale = 0.1,
+		ambientIntensity = 0.4,
+		outdoorAmbient = Color3.fromRGB(120, 120, 120),
 		reflectance = 0
 	},
 	Medium = { 
-		renderDistance = 800,
-		shadowsEnabled = true,
-		particlesEnabled = true,
-		postProcessing = false,
-		fogEnabled = false,
-		fogStart = 0,
-		fogEnd = 100000,
-		brightness = 2,
-		technology = Enum.Technology.ShadowMap,
-		castShadow = true,
-		environmentSpecularScale = 0.3,
-		environmentDiffuseScale = 0.3,
-		ambientIntensity = 0.5,
-		outdoorAmbient = Color3.fromRGB(127, 127, 127),
-		reflectance = 0.3
-	},
-	High = { 
-		renderDistance = 1500,
+		renderDistance = 900,
 		shadowsEnabled = true,
 		particlesEnabled = true,
 		postProcessing = true,
 		fogEnabled = false,
 		fogStart = 0,
 		fogEnd = 100000,
-		brightness = 2.5,
+		brightness = 2.2,
+		technology = Enum.Technology.ShadowMap,
+		castShadow = true,
+		environmentSpecularScale = 0.2,
+		environmentDiffuseScale = 0.4,
+		ambientIntensity = 0.6,
+		outdoorAmbient = Color3.fromRGB(130, 130, 130),
+		reflectance = 0.15
+	},
+	High = { 
+		renderDistance = 1800,
+		shadowsEnabled = true,
+		particlesEnabled = true,
+		postProcessing = true,
+		fogEnabled = false,
+		fogStart = 0,
+		fogEnd = 100000,
+		brightness = 2.6,
 		technology = Enum.Technology.Future,
 		castShadow = true,
-		environmentSpecularScale = 0.7,
-		environmentDiffuseScale = 0.7,
+		environmentSpecularScale = 0.35,
+		environmentDiffuseScale = 0.6,
 		ambientIntensity = 0.7,
-		outdoorAmbient = Color3.fromRGB(140, 140, 140),
-		reflectance = 0.6
+		outdoorAmbient = Color3.fromRGB(135, 135, 135),
+		reflectance = 0.25
 	},
 	Cinematic = { 
 		renderDistance = 2500,
@@ -86,11 +84,11 @@ local QUALITY_PRESETS = {
 		brightness = 3,
 		technology = Enum.Technology.Future,
 		castShadow = true,
-		environmentSpecularScale = 1,
-		environmentDiffuseScale = 1,
-		ambientIntensity = 1,
-		outdoorAmbient = Color3.fromRGB(160, 160, 160),
-		reflectance = 1
+		environmentSpecularScale = 0.5,
+		environmentDiffuseScale = 0.8,
+		ambientIntensity = 0.8,
+		outdoorAmbient = Color3.fromRGB(140, 140, 140),
+		reflectance = 0.1
 	}
 }
 
@@ -121,7 +119,6 @@ local function getLastQuality()
 	return (success and saved and QUALITY_PRESETS[saved]) and saved or currentQuality
 end
 
--- Debounce helper
 local function debounce(func, wait)
 	local lastCall = 0
 	return function(...)
@@ -141,7 +138,6 @@ local isApplying = false
 local applyQueue = nil
 
 local function applyPerformanceSettings(qualityName)
-	-- Queue system to prevent spam
 	if isApplying then
 		applyQueue = qualityName
 		return
@@ -157,18 +153,16 @@ local function applyPerformanceSettings(qualityName)
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	
 	-- Render Distance
-	local distanceSuccess = pcall(function()
+	pcall(function()
 		if player.Character then
 			player.CameraMaxZoomDistance = preset.renderDistance
 			player.CameraMinZoomDistance = 0.5
 		end
-	end)
-	if distanceSuccess then
 		print("✓ Render Distance: " .. preset.renderDistance)
-	end
+	end)
 	
 	-- Lighting
-	local lightingSuccess = pcall(function()
+	pcall(function()
 		Lighting.Technology = preset.technology
 		Lighting.GlobalShadows = preset.shadowsEnabled
 		Lighting.EnvironmentSpecularScale = preset.environmentSpecularScale
@@ -176,78 +170,58 @@ local function applyPerformanceSettings(qualityName)
 		Lighting.Brightness = preset.brightness
 		Lighting.Ambient = Color3.new(preset.ambientIntensity, preset.ambientIntensity, preset.ambientIntensity)
 		Lighting.OutdoorAmbient = preset.outdoorAmbient
-	end)
-	if lightingSuccess then
 		print("✓ Lighting: " .. tostring(preset.technology))
 		print("✓ Shadows: " .. (preset.shadowsEnabled and "ON" or "OFF"))
-	end
+	end)
 	
-	-- Part Shadows & Reflectance (Optimized with batch processing)
+	-- Parts Processing (Async with better memory management)
 	task.spawn(function()
 		local partsProcessed = 0
-		local batchSize = 100
-		local parts = {}
+		local batchSize = 50
 		
-		-- Collect parts first
-		local collectSuccess = pcall(function()
-			for _, obj in ipairs(Workspace:GetDescendants()) do
-				if obj:IsA("BasePart") then
-					table.insert(parts, obj)
+		pcall(function()
+			local allParts = Workspace:GetDescendants()
+			
+			for i = 1, #allParts do
+				local obj = allParts[i]
+				if obj:IsA("BasePart") and obj.Parent then
+					pcall(function()
+						obj.CastShadow = preset.castShadow
+						if obj.Material ~= Enum.Material.Plastic and obj.Material ~= Enum.Material.SmoothPlastic then
+							obj.Reflectance = preset.reflectance
+						end
+					end)
+					partsProcessed = partsProcessed + 1
+				end
+				
+				if i % batchSize == 0 then
+					task.wait()
 				end
 			end
+			
+			print("✓ Parts Processed: " .. partsProcessed)
+			print("✓ Shadows: " .. (preset.castShadow and "ON" or "OFF") .. " | Reflectance: " .. (preset.reflectance * 100) .. "%")
 		end)
-		
-		if not collectSuccess then
-			warn("⚠ Could not collect parts for processing")
-			return
-		end
-		
-		-- Process in batches
-		for i = 1, #parts, batchSize do
-			for j = i, math.min(i + batchSize - 1, #parts) do
-				local part = parts[j]
-				pcall(function()
-					if part and part.Parent then
-						part.CastShadow = preset.castShadow
-						if part.Material ~= Enum.Material.Plastic and part.Material ~= Enum.Material.SmoothPlastic then
-							part.Reflectance = preset.reflectance
-						end
-					end
-				end)
-				partsProcessed = partsProcessed + 1
-			end
-			if i % 500 == 0 then
-				task.wait() -- Yield periodically to prevent lag
-			end
-		end
-		
-		print("✓ Parts Processed: " .. partsProcessed)
-		print("✓ Shadows: " .. (preset.castShadow and "ON" or "OFF") .. " | Reflectance: " .. (preset.reflectance * 100) .. "%")
 	end)
 	
 	-- Particles
 	task.spawn(function()
 		local particleCount = 0
-		local particleSuccess = pcall(function()
+		pcall(function()
 			for _, obj in ipairs(Workspace:GetDescendants()) do
-				if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+				if (obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles")) and obj.Parent then
 					pcall(function() 
-						if obj and obj.Parent then
-							obj.Enabled = preset.particlesEnabled 
-						end
+						obj.Enabled = preset.particlesEnabled 
 					end)
 					particleCount = particleCount + 1
 				end
 			end
-		end)
-		if particleSuccess then
 			print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF") .. " (" .. particleCount .. " emitters)")
-		end
+		end)
 	end)
 	
-	-- Post Processing (Cleaned up with better error handling)
-	local postProcessSuccess = pcall(function()
-		-- Remove ALL existing post effects
+	-- Post Processing
+	pcall(function()
 		for _, effect in ipairs(Lighting:GetChildren()) do
 			if effect:IsA("PostEffect") or effect:IsA("Atmosphere") then
 				pcall(function() effect:Destroy() end)
@@ -255,64 +229,40 @@ local function applyPerformanceSettings(qualityName)
 		end
 		
 		if preset.postProcessing then
-			-- Bloom
-			pcall(function()
-				local bloom = Instance.new("BloomEffect")
-				bloom.Intensity = qualityName == "Cinematic" and 1 or 0.5
-				bloom.Size = qualityName == "Cinematic" and 56 or 32
-				bloom.Threshold = qualityName == "Cinematic" and 1 or 1.8
-				bloom.Parent = Lighting
-			end)
+			-- Bloom (Medium, High, Cinematic)
+			local bloom = Instance.new("BloomEffect")
+			bloom.Intensity = qualityName == "Cinematic" and 0.5 or (qualityName == "High" and 0.3 or 0.2)
+			bloom.Size = qualityName == "Cinematic" and 32 or (qualityName == "High" and 24 or 16)
+			bloom.Threshold = qualityName == "Cinematic" and 1.2 or (qualityName == "High" and 1.5 or 2)
+			bloom.Parent = Lighting
 			
-			-- SunRays (High and Cinematic)
+			-- SunRays (High and Cinematic only)
 			if qualityName == "High" or qualityName == "Cinematic" then
-				pcall(function()
-					local sunrays = Instance.new("SunRaysEffect")
-					sunrays.Intensity = qualityName == "Cinematic" and 0.08 or 0.04
-					sunrays.Spread = qualityName == "Cinematic" and 1 or 0.7
-					sunrays.Parent = Lighting
-				end)
+				local sunrays = Instance.new("SunRaysEffect")
+				sunrays.Intensity = qualityName == "Cinematic" and 0.05 or 0.03
+				sunrays.Spread = qualityName == "Cinematic" and 0.8 or 0.6
+				sunrays.Parent = Lighting
 			end
 			
-			-- Color Correction
-			pcall(function()
-				local colorCorrection = Instance.new("ColorCorrectionEffect")
-				colorCorrection.Brightness = qualityName == "Cinematic" and 0.05 or 0.02
-				colorCorrection.Contrast = qualityName == "Cinematic" and 0.2 or 0.1
-				colorCorrection.Saturation = qualityName == "Cinematic" and 0.2 or 0.1
-				colorCorrection.TintColor = qualityName == "Cinematic" and Color3.fromRGB(255, 250, 240) or Color3.fromRGB(255, 255, 255)
-				colorCorrection.Parent = Lighting
-			end)
+			-- Color Correction (Subtle for all)
+			local colorCorrection = Instance.new("ColorCorrectionEffect")
+			colorCorrection.Brightness = qualityName == "Cinematic" and 0.03 or (qualityName == "High" and 0.02 or 0.01)
+			colorCorrection.Contrast = qualityName == "Cinematic" and 0.1 or (qualityName == "High" and 0.05 or 0.02)
+			colorCorrection.Saturation = qualityName == "Cinematic" and 0.15 or (qualityName == "High" and 0.08 or 0.05)
+			colorCorrection.TintColor = Color3.fromRGB(255, 255, 255)
+			colorCorrection.Parent = Lighting
 			
-			-- Cinematic-exclusive effects
 			if qualityName == "Cinematic" then
-				pcall(function()
-					local atmosphere = Instance.new("Atmosphere")
-					atmosphere.Density = 0.395
-					atmosphere.Offset = 0.5
-					atmosphere.Color = Color3.fromRGB(199, 199, 199)
-					atmosphere.Decay = Color3.fromRGB(106, 112, 125)
-					atmosphere.Glare = 0.4
-					atmosphere.Haze = 1.8
-					atmosphere.Parent = Lighting
-				end)
+				local atmosphere = Instance.new("Atmosphere")
+				atmosphere.Density = 0.3
+				atmosphere.Offset = 0.25
+				atmosphere.Color = Color3.fromRGB(199, 199, 199)
+				atmosphere.Decay = Color3.fromRGB(106, 112, 125)
+				atmosphere.Glare = 0.2
+				atmosphere.Haze = 1.2
+				atmosphere.Parent = Lighting
 				
-				pcall(function()
-					local dof = Instance.new("DepthOfFieldEffect")
-					dof.FarIntensity = 0.15
-					dof.FocusDistance = 60
-					dof.InFocusRadius = 40
-					dof.NearIntensity = 0.3
-					dof.Parent = Lighting
-				end)
-				
-				pcall(function()
-					local blur = Instance.new("BlurEffect")
-					blur.Size = 2
-					blur.Parent = Lighting
-				end)
-				
-				print("✓ Cinematic Effects: Atmosphere, DoF, Blur")
+				print("✓ Cinematic Effects: Atmosphere")
 			end
 			
 			print("✓ Post Processing: " .. qualityName)
@@ -321,22 +271,16 @@ local function applyPerformanceSettings(qualityName)
 		end
 	end)
 	
-	if not postProcessSuccess then
-		warn("⚠ Some post-processing effects could not be applied")
-	end
-	
 	-- Fog
-	local fogSuccess = pcall(function()
+	pcall(function()
 		Lighting.FogEnabled = preset.fogEnabled
 		if preset.fogEnabled then
 			Lighting.FogStart = preset.fogStart
 			Lighting.FogEnd = preset.fogEnd
 			Lighting.FogColor = Color3.fromRGB(192, 192, 192)
 		end
-	end)
-	if fogSuccess then
 		print("✓ Fog: " .. (preset.fogEnabled and "ON" or "OFF"))
-	end
+	end)
 	
 	print("✅ " .. qualityName:upper() .. " Applied!")
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -344,7 +288,6 @@ local function applyPerformanceSettings(qualityName)
 	saveQuality(qualityName)
 	isApplying = false
 	
-	-- Process queued request
 	if applyQueue then
 		local queued = applyQueue
 		applyQueue = nil
@@ -494,7 +437,6 @@ for _, qualityName in ipairs(qualities) do
 		applyPerformanceSettings(qualityName)
 		statusLabel.Text = "Current: " .. qualityName
 		
-		-- Update button states
 		for name, btn in pairs(buttons) do
 			btn.BackgroundTransparency = name == qualityName and 0.1 or 0.4
 		end
@@ -534,14 +476,32 @@ toggleStroke.Transparency = 0.3
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
 
--- Animation variables
-local isHovering = false
+-- Animation state
 local pulseConnection
 local breathingConnection
+local baseSize = toggleButton.Size
 
--- Pulse effect (glow)
+local function stopAllAnimations()
+	if pulseConnection then
+		pulseConnection:Disconnect()
+		pulseConnection = nil
+	end
+	if breathingConnection then
+		breathingConnection:Disconnect()
+		breathingConnection = nil
+	end
+	
+	for _, child in ipairs(toggleButton:GetChildren()) do
+		if child:IsA("UIStroke") and child ~= toggleStroke then
+			child:Destroy()
+		end
+	end
+	
+	toggleButton.Size = baseSize
+end
+
 local function startPulseEffect()
-	if pulseConnection then return end
+	stopAllAnimations()
 	
 	local strokeCopy = Instance.new("UIStroke")
 	strokeCopy.Color = Color3.fromRGB(100, 180, 255)
@@ -551,37 +511,17 @@ local function startPulseEffect()
 	strokeCopy.Parent = toggleButton
 	
 	pulseConnection = RunService.Heartbeat:Connect(function()
-		local time = tick() * 2
-		local pulse = (math.sin(time) + 1) / 2
-		
+		local pulse = (math.sin(tick() * 2) + 1) / 2
 		strokeCopy.Thickness = 2 + (pulse * 3)
 		strokeCopy.Transparency = 0.3 + (pulse * 0.5)
 	end)
 end
 
-local function stopPulseEffect()
-	if pulseConnection then
-		pulseConnection:Disconnect()
-		pulseConnection = nil
-	end
-	
-	for _, child in ipairs(toggleButton:GetChildren()) do
-		if child:IsA("UIStroke") and child ~= toggleStroke then
-			child:Destroy()
-		end
-	end
-end
-
--- Breathing animation (size)
 local function startBreathingAnimation()
-	if breathingConnection then return end
-	
-	local baseSize = toggleButton.Size
+	stopAllAnimations()
 	
 	breathingConnection = RunService.Heartbeat:Connect(function()
-		local time = tick() * 1.5
-		local breath = (math.sin(time) * 0.08) + 1
-		
+		local breath = (math.sin(tick() * 1.5) * 0.08) + 1
 		toggleButton.Size = UDim2.new(
 			baseSize.X.Scale * breath,
 			baseSize.X.Offset * breath,
@@ -591,118 +531,74 @@ local function startBreathingAnimation()
 	end)
 end
 
-local function stopBreathingAnimation()
-	if breathingConnection then
-		breathingConnection:Disconnect()
-		breathingConnection = nil
-		
-		toggleButton.Size = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
-	end
-end
-
--- Toggle scale animation
-local function animateToggleScale(scale, duration)
-	local tweenInfo = TweenInfo.new(
-		duration or 0.15,
-		Enum.EasingStyle.Back,
-		Enum.EasingDirection.Out
-	)
-	
-	local baseSize = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
-	local targetSize = UDim2.new(
-		baseSize.X.Scale,
-		baseSize.X.Offset * scale,
-		baseSize.Y.Scale,
-		baseSize.Y.Offset * scale
-	)
-	
-	local tween = TweenService:Create(toggleButton, tweenInfo, {
-		Size = targetSize
-	})
-	tween:Play()
-end
-
--- Click animation
 toggleButton.MouseButton1Click:Connect(function()
-	-- Stop breathing temporarily
 	local wasBreathing = breathingConnection ~= nil
-	if wasBreathing then
-		stopBreathingAnimation()
-	end
+	stopAllAnimations()
 	
-	-- Click animation sequence
-	animateToggleScale(0.85, 0.08)
-	task.wait(0.08)
-	animateToggleScale(1.15, 0.12)
-	task.wait(0.12)
-	animateToggleScale(1, 0.1)
+	local tweenInfo = TweenInfo.new(0.08, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	local t1 = TweenService:Create(toggleButton, tweenInfo, {
+		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.85, baseSize.Y.Scale, baseSize.Y.Offset * 0.85)
+	})
+	t1:Play()
+	t1.Completed:Wait()
 	
-	-- Resume breathing if it was active
+	local t2 = TweenService:Create(toggleButton, TweenInfo.new(0.12, Enum.EasingStyle.Back), {
+		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.15, baseSize.Y.Scale, baseSize.Y.Offset * 1.15)
+	})
+	t2:Play()
+	t2.Completed:Wait()
+	
+	local t3 = TweenService:Create(toggleButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+		Size = baseSize
+	})
+	t3:Play()
+	t3.Completed:Wait()
+	
 	if wasBreathing then
-		task.wait(0.1)
 		startBreathingAnimation()
 	end
 	
 	screenGui.Enabled = not screenGui.Enabled
 end)
 
--- Hover effects
 toggleButton.MouseEnter:Connect(function()
-	isHovering = true
-	
-	-- Smooth transition
-	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	
-	local bgTween = TweenService:Create(toggleButton, tweenInfo, {
+	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
+	TweenService:Create(toggleButton, tweenInfo, {
 		BackgroundTransparency = 0,
 		BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-	})
-	
-	local strokeTween = TweenService:Create(toggleStroke, tweenInfo, {
+	}):Play()
+	TweenService:Create(toggleStroke, tweenInfo, {
 		Transparency = 0,
 		Color = Color3.fromRGB(120, 150, 255)
-	})
+	}):Play()
 	
-	bgTween:Play()
-	strokeTween:Play()
-	
-	-- Start animations
-	stopBreathingAnimation()
 	startPulseEffect()
-	animateToggleScale(1.1, 0.2)
+	TweenService:Create(toggleButton, tweenInfo, {
+		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.1, baseSize.Y.Scale, baseSize.Y.Offset * 1.1)
+	}):Play()
 end)
 
 toggleButton.MouseLeave:Connect(function()
-	isHovering = false
-	
-	-- Smooth transition back
-	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	
-	local bgTween = TweenService:Create(toggleButton, tweenInfo, {
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
+	TweenService:Create(toggleButton, tweenInfo, {
 		BackgroundTransparency = 0.2,
 		BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-	})
-	
-	local strokeTween = TweenService:Create(toggleStroke, tweenInfo, {
+	}):Play()
+	TweenService:Create(toggleStroke, tweenInfo, {
 		Transparency = 0.3,
 		Color = Color3.fromRGB(80, 80, 100)
-	})
+	}):Play()
 	
-	bgTween:Play()
-	strokeTween:Play()
-	
-	-- Stop pulse, start breathing
-	stopPulseEffect()
-	animateToggleScale(1, 0.2)
-	task.wait(0.2)
+	local t = TweenService:Create(toggleButton, tweenInfo, {Size = baseSize})
+	t:Play()
+	t.Completed:Wait()
 	startBreathingAnimation()
 end)
 
--- Start idle breathing animation
 startBreathingAnimation()
 
 -- ============================================
--- FPS COUNTER (Optimized)
+-- FPS COUNTER
 -- ============================================
 
 local lastUpdate = tick()
@@ -715,7 +611,6 @@ local fpsConnection = RunService.RenderStepped:Connect(function()
 	if now - lastUpdate >= 0.5 then
 		local fps = math.floor(frameCount / (now - lastUpdate))
 		fpsLabel.Text = "FPS: " .. fps
-		
 		fpsLabel.TextColor3 = fps >= 55 and Color3.fromRGB(100, 255, 100)
 			or fps >= 30 and Color3.fromRGB(255, 200, 100)
 			or Color3.fromRGB(255, 100, 100)
@@ -726,32 +621,24 @@ local fpsConnection = RunService.RenderStepped:Connect(function()
 end)
 
 -- ============================================
--- HOTKEY (Desktop Only)
+-- HOTKEY & AUTO-APPLY
 -- ============================================
 
 local hotkeyConnection
 if not isMobile then
 	hotkeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
-		if input.KeyCode == Enum.KeyCode.G then
+		if not processed and input.KeyCode == Enum.KeyCode.G then
 			screenGui.Enabled = not screenGui.Enabled
 		end
 	end)
 end
 
--- ============================================
--- AUTO-APPLY SYSTEM
--- ============================================
-
--- Apply on respawn
-local characterConnection
-characterConnection = player.CharacterAdded:Connect(function()
+local characterConnection = player.CharacterAdded:Connect(function()
 	screenGui.Enabled = false
 	task.wait(1)
 	applyPerformanceSettings(getLastQuality())
 end)
 
--- Auto-apply to new particles (debounced with error handling)
 local handleNewParticle = debounce(function(obj)
 	local preset = QUALITY_PRESETS[currentQuality]
 	if preset and obj and obj.Parent then
@@ -765,10 +652,8 @@ local descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
 	end
 end)
 
--- Apply on startup
 task.delay(2, function()
 	applyPerformanceSettings(getLastQuality())
-	-- Update button state
 	if buttons[currentQuality] then
 		buttons[currentQuality].BackgroundTransparency = 0.1
 	end
@@ -779,24 +664,23 @@ end)
 -- ============================================
 
 local function cleanup()
+	stopAllAnimations()
 	if fpsConnection then fpsConnection:Disconnect() end
 	if hotkeyConnection then hotkeyConnection:Disconnect() end
 	if characterConnection then characterConnection:Disconnect() end
 	if descendantConnection then descendantConnection:Disconnect() end
-	if pulseConnection then pulseConnection:Disconnect() end
-	if breathingConnection then breathingConnection:Disconnect() end
 	if screenGui then screenGui:Destroy() end
 	if toggleScreenGui then toggleScreenGui:Destroy() end
 end
 
-local playerRemovingConnection = Players.PlayerRemoving:Connect(function(removingPlayer)
+Players.PlayerRemoving:Connect(function(removingPlayer)
 	if removingPlayer == player then
 		cleanup()
 	end
 end)
 
 print("═══════════════════════════════════════")
-print("🎮 Performance Settings Loaded (ANIMATED)")
+print("🎮 Performance Settings Loaded (OPTIMIZED)")
 print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
 print(isMobile and "📌 Tap ⚙️ to open settings" or "📌 Press G or click ⚙️")
 print("✨ Animations: Pulse, Breathing, Hover")
