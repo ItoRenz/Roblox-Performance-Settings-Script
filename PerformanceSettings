@@ -1,5 +1,5 @@
 -- ============================================
--- ROBLOX PERFORMANCE SETTINGS SCRIPT (OPTIMIZED)
+-- ROBLOX PERFORMANCE SETTINGS SCRIPT (SIMPLIFIED)
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
 -- ============================================
@@ -174,7 +174,7 @@ local function applyPerformanceSettings(qualityName)
 		print("✓ Shadows: " .. (preset.shadowsEnabled and "ON" or "OFF"))
 	end)
 	
-	-- Parts Processing (Async with better memory management)
+	-- Parts Processing
 	task.spawn(function()
 		local partsProcessed = 0
 		local batchSize = 50
@@ -200,7 +200,6 @@ local function applyPerformanceSettings(qualityName)
 			end
 			
 			print("✓ Parts Processed: " .. partsProcessed)
-			print("✓ Shadows: " .. (preset.castShadow and "ON" or "OFF") .. " | Reflectance: " .. (preset.reflectance * 100) .. "%")
 		end)
 	end)
 	
@@ -216,7 +215,7 @@ local function applyPerformanceSettings(qualityName)
 					particleCount = particleCount + 1
 				end
 			end
-			print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF") .. " (" .. particleCount .. " emitters)")
+			print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF"))
 		end)
 	end)
 	
@@ -229,14 +228,12 @@ local function applyPerformanceSettings(qualityName)
 		end
 		
 		if preset.postProcessing then
-			-- Bloom (Medium, High, Cinematic)
 			local bloom = Instance.new("BloomEffect")
 			bloom.Intensity = qualityName == "Cinematic" and 0.5 or (qualityName == "High" and 0.3 or 0.2)
 			bloom.Size = qualityName == "Cinematic" and 32 or (qualityName == "High" and 24 or 16)
 			bloom.Threshold = qualityName == "Cinematic" and 1.2 or (qualityName == "High" and 1.5 or 2)
 			bloom.Parent = Lighting
 			
-			-- SunRays (High and Cinematic only)
 			if qualityName == "High" or qualityName == "Cinematic" then
 				local sunrays = Instance.new("SunRaysEffect")
 				sunrays.Intensity = qualityName == "Cinematic" and 0.05 or 0.03
@@ -244,7 +241,6 @@ local function applyPerformanceSettings(qualityName)
 				sunrays.Parent = Lighting
 			end
 			
-			-- Color Correction (Subtle for all)
 			local colorCorrection = Instance.new("ColorCorrectionEffect")
 			colorCorrection.Brightness = qualityName == "Cinematic" and 0.03 or (qualityName == "High" and 0.02 or 0.01)
 			colorCorrection.Contrast = qualityName == "Cinematic" and 0.1 or (qualityName == "High" and 0.05 or 0.02)
@@ -261,8 +257,6 @@ local function applyPerformanceSettings(qualityName)
 				atmosphere.Glare = 0.2
 				atmosphere.Haze = 1.2
 				atmosphere.Parent = Lighting
-				
-				print("✓ Cinematic Effects: Atmosphere")
 			end
 			
 			print("✓ Post Processing: " .. qualityName)
@@ -303,118 +297,157 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PerformanceGui"
 screenGui.Enabled = false
 screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 100
+screenGui.IgnoreGuiInset = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
 local toggleScreenGui = Instance.new("ScreenGui")
 toggleScreenGui.Name = "PerformanceToggle"
 toggleScreenGui.ResetOnSpawn = false
+toggleScreenGui.DisplayOrder = 101
+toggleScreenGui.IgnoreGuiInset = true
 toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleScreenGui.Parent = playerGui
 
--- Main Frame
+-- Main Frame (Compact) with optimized visibility
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = isMobile and UDim2.new(0, 180, 0, 260) or UDim2.new(0, 260, 0, 320)
-mainFrame.Position = isMobile and UDim2.new(1, -190, 0, 10) or UDim2.new(1, -270, 0, 15)
-mainFrame.AnchorPoint = Vector2.new(1, 0)
+mainFrame.Size = isMobile and UDim2.new(0, 150, 0, 200) or UDim2.new(0, 180, 0, 230)
+mainFrame.Position = isMobile and UDim2.new(1, -155, 0.5, -100) or UDim2.new(1, -185, 0.5, -115)
+mainFrame.AnchorPoint = Vector2.new(1, 0.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 mainFrame.BackgroundTransparency = 0.05
 mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Visible = true
 mainFrame.Parent = screenGui
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.CornerRadius = UDim.new(0, 10)
 frameCorner.Parent = mainFrame
 
--- Header
+-- Header (Compact)
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 38)
+header.Size = UDim2.new(1, 0, 0, 30)
 header.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 header.BackgroundTransparency = 0.3
 header.BorderSizePixel = 0
 header.Parent = mainFrame
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
+headerCorner.CornerRadius = UDim.new(0, 10)
 headerCorner.Parent = header
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -45, 1, 0)
-titleLabel.Position = UDim2.new(0, 12, 0, 0)
+titleLabel.Size = UDim2.new(1, -35, 1, 0)
+titleLabel.Position = UDim2.new(0, 8, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "⚡ PERFORMANCE"
+titleLabel.Text = "⚡ SETTINGS"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = isMobile and 10 or 12
+titleLabel.TextSize = isMobile and 9 or 10
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = header
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -34, 0, 5)
+closeBtn.Name = "CloseButton"
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -26, 0, 4)
 closeBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
 closeBtn.BackgroundTransparency = 0.15
 closeBtn.BorderSizePixel = 0
-closeBtn.Text = "✕"
+closeBtn.Text = "X"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 16
+closeBtn.TextSize = 12
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.AutoButtonColor = false
 closeBtn.Parent = header
 
 local closeBtnCorner = Instance.new("UICorner")
-closeBtnCorner.CornerRadius = UDim.new(0, 7)
+closeBtnCorner.CornerRadius = UDim.new(0, 6)
 closeBtnCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function()
+	-- Immediate close with quick fade
+	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(mainFrame, tweenInfo, {BackgroundTransparency = 1})
+	tween:Play()
+	
+	for _, child in ipairs(mainFrame:GetDescendants()) do
+		if child:IsA("GuiObject") then
+			pcall(function()
+				TweenService:Create(child, tweenInfo, {
+					BackgroundTransparency = 1,
+					TextTransparency = 1
+				}):Play()
+			end)
+		end
+	end
+	
+	task.wait(0.1)
 	screenGui.Enabled = false
+	
+	-- Reset transparencies for next open
+	mainFrame.BackgroundTransparency = 0.05
+	for _, child in ipairs(mainFrame:GetDescendants()) do
+		if child:IsA("GuiObject") then
+			pcall(function()
+				if child:IsA("TextButton") or child:IsA("TextLabel") then
+					child.BackgroundTransparency = child.Name == "CloseButton" and 0.15 or (child:IsA("TextLabel") and 1 or 0.4)
+					child.TextTransparency = 0
+				elseif child:IsA("Frame") then
+					child.BackgroundTransparency = child == header and 0.3 or (child == container and 1 or 0.05)
+				end
+			end)
+		end
+	end
 end)
 
 -- Buttons Container
 local container = Instance.new("Frame")
-container.Size = UDim2.new(1, -12, 1, -48)
-container.Position = UDim2.new(0, 6, 0, 42)
+container.Size = UDim2.new(1, -10, 1, -38)
+container.Position = UDim2.new(0, 5, 0, 33)
 container.BackgroundTransparency = 1
 container.Parent = mainFrame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, isMobile and 5 or 6)
+layout.Padding = UDim.new(0, 4)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = container
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, isMobile and 16 or 18)
+statusLabel.Size = UDim2.new(1, 0, 0, 14)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "Current: " .. getLastQuality()
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextSize = isMobile and 9 or 10
+statusLabel.TextSize = isMobile and 8 or 9
 statusLabel.Font = Enum.Font.GothamSemibold
 statusLabel.Parent = container
 
 -- FPS Counter
 local fpsLabel = Instance.new("TextLabel")
-fpsLabel.Size = UDim2.new(1, 0, 0, isMobile and 14 or 16)
+fpsLabel.Size = UDim2.new(1, 0, 0, 12)
 fpsLabel.BackgroundTransparency = 1
 fpsLabel.Text = "FPS: --"
 fpsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-fpsLabel.TextSize = isMobile and 8 or 9
+fpsLabel.TextSize = isMobile and 7 or 8
 fpsLabel.Font = Enum.Font.GothamSemibold
 fpsLabel.Parent = container
 
--- Quality Buttons
+-- Quality Buttons (Compact)
 local qualities = {"Low", "Medium", "High", "Cinematic"}
 local buttons = {}
 
 for _, qualityName in ipairs(qualities) do
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, 0, 0, isMobile and 32 or 36)
+	button.Size = UDim2.new(1, 0, 0, isMobile and 28 or 32)
 	button.BackgroundColor3 = COLORS[qualityName]
 	button.BackgroundTransparency = 0.4
 	button.BorderSizePixel = 0
 	button.Text = qualityName:upper()
 	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.TextSize = isMobile and 11 or 12
+	button.TextSize = isMobile and 9 or 10
 	button.Font = Enum.Font.GothamBold
 	button.AutoButtonColor = false
 	button.Parent = container
@@ -422,7 +455,7 @@ for _, qualityName in ipairs(qualities) do
 	buttons[qualityName] = button
 	
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
+	corner.CornerRadius = UDim.new(0, 6)
 	corner.Parent = button
 	
 	button.MouseEnter:Connect(function()
@@ -449,18 +482,19 @@ for _, qualityName in ipairs(qualities) do
 end
 
 -- ============================================
--- ANIMATED TOGGLE BUTTON
+-- TOGGLE BUTTON (SIMPLE & COOL ANIMATION)
 -- ============================================
 
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = isMobile and UDim2.new(0, 35, 0, 35) or UDim2.new(0, 38, 0, 38)
-toggleButton.Position = isMobile and UDim2.new(1, -20, 0.5, 0) or UDim2.new(1, -22, 0.5, 0)
-toggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+toggleButton.Name = "SettingsToggleButton"
+toggleButton.Size = isMobile and UDim2.new(0, 33, 0, 33) or UDim2.new(0, 35, 0, 35)
+toggleButton.Position = UDim2.new(1, isMobile and -38 or -40, 0.5, 30)
+toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-toggleButton.BackgroundTransparency = 0.2
+toggleButton.BackgroundTransparency = 0.15
 toggleButton.BorderSizePixel = 0
 toggleButton.Text = "⚙️"
-toggleButton.TextSize = isMobile and 16 or 18
+toggleButton.TextSize = isMobile and 16 or 17
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = toggleScreenGui
@@ -470,132 +504,102 @@ toggleCorner.CornerRadius = UDim.new(0.5, 0)
 toggleCorner.Parent = toggleButton
 
 local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(80, 80, 100)
-toggleStroke.Thickness = isMobile and 1 or 1.5
-toggleStroke.Transparency = 0.3
+toggleStroke.Color = Color3.fromRGB(100, 100, 120)
+toggleStroke.Thickness = 1.5
+toggleStroke.Transparency = 0.4
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
 
--- Animation state
-local pulseConnection
-local breathingConnection
+-- Simple Rotation Animation
+local rotationConnection
 local baseSize = toggleButton.Size
+local isRotating = false
 
-local function stopAllAnimations()
-	if pulseConnection then
-		pulseConnection:Disconnect()
-		pulseConnection = nil
-	end
-	if breathingConnection then
-		breathingConnection:Disconnect()
-		breathingConnection = nil
-	end
+local function startRotation()
+	if isRotating then return end
+	isRotating = true
 	
-	for _, child in ipairs(toggleButton:GetChildren()) do
-		if child:IsA("UIStroke") and child ~= toggleStroke then
-			child:Destroy()
-		end
-	end
-	
-	toggleButton.Size = baseSize
-end
-
-local function startPulseEffect()
-	stopAllAnimations()
-	
-	local strokeCopy = Instance.new("UIStroke")
-	strokeCopy.Color = Color3.fromRGB(100, 180, 255)
-	strokeCopy.Thickness = 0
-	strokeCopy.Transparency = 1
-	strokeCopy.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	strokeCopy.Parent = toggleButton
-	
-	pulseConnection = RunService.Heartbeat:Connect(function()
-		local pulse = (math.sin(tick() * 2) + 1) / 2
-		strokeCopy.Thickness = 2 + (pulse * 3)
-		strokeCopy.Transparency = 0.3 + (pulse * 0.5)
+	local startTime = tick()
+	rotationConnection = RunService.Heartbeat:Connect(function()
+		local elapsed = tick() - startTime
+		toggleButton.Rotation = (elapsed * 60) % 360
 	end)
-end
-
-local function startBreathingAnimation()
-	stopAllAnimations()
 	
-	breathingConnection = RunService.Heartbeat:Connect(function()
-		local breath = (math.sin(tick() * 1.5) * 0.08) + 1
-		toggleButton.Size = UDim2.new(
-			baseSize.X.Scale * breath,
-			baseSize.X.Offset * breath,
-			baseSize.Y.Scale * breath,
-			baseSize.Y.Offset * breath
-		)
-	end)
+	task.wait(0.5)
+	if rotationConnection then
+		rotationConnection:Disconnect()
+		rotationConnection = nil
+	end
+	
+	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	TweenService:Create(toggleButton, tweenInfo, {Rotation = 0}):Play()
+	
+	isRotating = false
 end
 
+-- Click Animation with debounce
+local isToggling = false
 toggleButton.MouseButton1Click:Connect(function()
-	local wasBreathing = breathingConnection ~= nil
-	stopAllAnimations()
+	if isToggling then return end
+	isToggling = true
 	
-	local tweenInfo = TweenInfo.new(0.08, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-	local t1 = TweenService:Create(toggleButton, tweenInfo, {
-		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.85, baseSize.Y.Scale, baseSize.Y.Offset * 0.85)
-	})
-	t1:Play()
-	t1.Completed:Wait()
-	
-	local t2 = TweenService:Create(toggleButton, TweenInfo.new(0.12, Enum.EasingStyle.Back), {
-		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.15, baseSize.Y.Scale, baseSize.Y.Offset * 1.15)
-	})
-	t2:Play()
-	t2.Completed:Wait()
-	
-	local t3 = TweenService:Create(toggleButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-		Size = baseSize
-	})
-	t3:Play()
-	t3.Completed:Wait()
-	
-	if wasBreathing then
-		startBreathingAnimation()
-	end
-	
+	-- Toggle immediately for responsiveness
 	screenGui.Enabled = not screenGui.Enabled
-end)
-
-toggleButton.MouseEnter:Connect(function()
-	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
-	TweenService:Create(toggleButton, tweenInfo, {
-		BackgroundTransparency = 0,
-		BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-	}):Play()
-	TweenService:Create(toggleStroke, tweenInfo, {
-		Transparency = 0,
-		Color = Color3.fromRGB(120, 150, 255)
-	}):Play()
 	
-	startPulseEffect()
-	TweenService:Create(toggleButton, tweenInfo, {
-		Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.1, baseSize.Y.Scale, baseSize.Y.Offset * 1.1)
-	}):Play()
+	-- Then play animation
+	task.spawn(function()
+		-- Scale down
+		local tweenInfo1 = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		local tween1 = TweenService:Create(toggleButton, tweenInfo1, {
+			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.85, baseSize.Y.Scale, baseSize.Y.Offset * 0.85),
+			BackgroundColor3 = Color3.fromRGB(80, 120, 255)
+		})
+		tween1:Play()
+		tween1.Completed:Wait()
+		
+		-- Scale up with rotation
+		local tweenInfo2 = TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+		local tween2 = TweenService:Create(toggleButton, tweenInfo2, {
+			Size = baseSize,
+			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+		})
+		tween2:Play()
+		
+		startRotation()
+		
+		task.wait(0.5)
+		isToggling = false
+	end)
 end)
 
-toggleButton.MouseLeave:Connect(function()
-	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
-	TweenService:Create(toggleButton, tweenInfo, {
-		BackgroundTransparency = 0.2,
-		BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-	}):Play()
-	TweenService:Create(toggleStroke, tweenInfo, {
-		Transparency = 0.3,
-		Color = Color3.fromRGB(80, 80, 100)
-	}):Play()
+-- Hover Animation (PC Only)
+if not isMobile then
+	toggleButton.MouseEnter:Connect(function()
+		local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
+		TweenService:Create(toggleButton, tweenInfo, {
+			BackgroundTransparency = 0,
+			BackgroundColor3 = Color3.fromRGB(60, 80, 120),
+			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.15, baseSize.Y.Scale, baseSize.Y.Offset * 1.15)
+		}):Play()
+		TweenService:Create(toggleStroke, tweenInfo, {
+			Transparency = 0.1,
+			Color = Color3.fromRGB(120, 160, 255)
+		}):Play()
+	end)
 	
-	local t = TweenService:Create(toggleButton, tweenInfo, {Size = baseSize})
-	t:Play()
-	t.Completed:Wait()
-	startBreathingAnimation()
-end)
-
-startBreathingAnimation()
+	toggleButton.MouseLeave:Connect(function()
+		local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
+		TweenService:Create(toggleButton, tweenInfo, {
+			BackgroundTransparency = 0.15,
+			BackgroundColor3 = Color3.fromRGB(40, 40, 50),
+			Size = baseSize
+		}):Play()
+		TweenService:Create(toggleStroke, tweenInfo, {
+			Transparency = 0.4,
+			Color = Color3.fromRGB(100, 100, 120)
+		}):Play()
+	end)
+end
 
 -- ============================================
 -- FPS COUNTER
@@ -621,23 +625,18 @@ local fpsConnection = RunService.RenderStepped:Connect(function()
 end)
 
 -- ============================================
--- HOTKEY & AUTO-APPLY
+-- AUTO-APPLY ON CHARACTER SPAWN
 -- ============================================
-
-local hotkeyConnection
-if not isMobile then
-	hotkeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
-		if not processed and input.KeyCode == Enum.KeyCode.G then
-			screenGui.Enabled = not screenGui.Enabled
-		end
-	end)
-end
 
 local characterConnection = player.CharacterAdded:Connect(function()
 	screenGui.Enabled = false
 	task.wait(1)
 	applyPerformanceSettings(getLastQuality())
 end)
+
+-- ============================================
+-- DYNAMIC PARTICLE HANDLING
+-- ============================================
 
 local handleNewParticle = debounce(function(obj)
 	local preset = QUALITY_PRESETS[currentQuality]
@@ -652,6 +651,10 @@ local descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
 	end
 end)
 
+-- ============================================
+-- INITIAL QUALITY APPLICATION
+-- ============================================
+
 task.delay(2, function()
 	applyPerformanceSettings(getLastQuality())
 	if buttons[currentQuality] then
@@ -664,9 +667,8 @@ end)
 -- ============================================
 
 local function cleanup()
-	stopAllAnimations()
+	if rotationConnection then rotationConnection:Disconnect() end
 	if fpsConnection then fpsConnection:Disconnect() end
-	if hotkeyConnection then hotkeyConnection:Disconnect() end
 	if characterConnection then characterConnection:Disconnect() end
 	if descendantConnection then descendantConnection:Disconnect() end
 	if screenGui then screenGui:Destroy() end
@@ -679,9 +681,14 @@ Players.PlayerRemoving:Connect(function(removingPlayer)
 	end
 end)
 
+-- ============================================
+-- STARTUP MESSAGE
+-- ============================================
+
 print("═══════════════════════════════════════")
-print("🎮 Performance Settings Loaded (OPTIMIZED)")
-print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
-print(isMobile and "📌 Tap ⚙️ to open settings" or "📌 Press G or click ⚙️")
-print("✨ Animations: Pulse, Breathing, Hover")
+print("🎮 Performance Settings Loaded v3.1")
+print("📱 Platform: " .. (isMobile and "Mobile (33x33px)" or "Desktop (35x35px)"))
+print("📌 Click ⚙️ button to open settings")
+print("✨ Simple rotation animation on click")
+print("🔧 Compact UI - Optimized layout")
 print("═══════════════════════════════════════")
