@@ -99,7 +99,7 @@ local COLORS = {
 	Cinematic = Color3.fromRGB(138, 43, 226)
 }
 
-local currentQuality = "Medium"
+local currentQuality = "Cinematic"
 
 -- ============================================
 -- UTILITY FUNCTIONS
@@ -116,7 +116,10 @@ local function getLastQuality()
 	local success, saved = pcall(function()
 		return player:GetAttribute("PreferredQuality")
 	end)
-	return (success and saved and QUALITY_PRESETS[saved]) and saved or currentQuality
+	if success and saved and QUALITY_PRESETS[saved] then
+		return saved
+	end
+	return "Cinematic"
 end
 
 local function debounce(func, wait)
@@ -691,4 +694,5 @@ print("📱 Platform: " .. (isMobile and "Mobile (33x33px)" or "Desktop (35x35px
 print("📌 Click ⚙️ button to open settings")
 print("✨ Simple rotation animation on click")
 print("🔧 Compact UI - Optimized layout")
+print("🎬 Default Quality: CINEMATIC")
 print("═══════════════════════════════════════")
