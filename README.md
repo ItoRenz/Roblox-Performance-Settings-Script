@@ -1,221 +1,208 @@
-# ⚡ ROBLOX Performance Settings Script
+# 🎮 Roblox Performance Settings v3.5
 
-A feature-rich, animated performance settings GUI for ROBLOX games with smooth transitions and multiple quality presets.
+A modern, sleek graphics settings GUI for Roblox games with real-time FPS monitoring and persistent quality preferences.
 
-![ROBLOX](https://img.shields.io/badge/ROBLOX-000000?style=for-the-badge&logo=roblox&logoColor=white)
-![Lua](https://img.shields.io/badge/Lua-2C2D72?style=for-the-badge&logo=lua&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-3.5-blue)
+![Platform](https://img.shields.io/badge/platform-Roblox-red)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
 
-### 🎮 Quality Presets
-- **Low** - Optimized for maximum FPS (250 render distance, no shadows)
-- **Medium** - Balanced performance (800 render distance, basic shadows)
-- **High** - Enhanced visuals (1500 render distance, full effects)
-- **Cinematic** - Maximum quality (2500 render distance, all effects enabled)
+- **4 Graphics Presets**: Cinematic, High, Medium, Low
+- **Real-time FPS Counter**: Monitor your game performance
+- **Persistent Settings**: Your preferences are saved across sessions
+- **Mobile & Desktop Optimized**: Responsive UI for all devices
+- **Modern UI Design**: Clean, minimalist interface with smooth animations
+- **Color-Coded Indicators**: Each quality preset has its unique color
+- **Instant Apply**: Graphics settings apply immediately without lag
+- **Dynamic Particle Control**: Automatically manages new particles spawned in-game
 
-### 🎨 Animated Toggle Button
-- **Pulse Effect** - Glowing border animation on hover
-- **Breathing Animation** - Subtle size pulsing when idle
-- **Hover Effects** - Smooth color and scale transitions
-- **Click Animation** - Bounce effect with squeeze and expand
-- **Edge Positioning** - Stays at screen edge, doesn't obstruct gameplay
+## 📋 Quality Presets
 
-### 📊 Real-time Monitoring
-- **FPS Counter** - Live frame rate display with color indicators
-  - 🟢 Green: 55+ FPS
-  - 🟡 Yellow: 30-54 FPS
-  - 🔴 Red: Below 30 FPS
-- **Current Quality Display** - Shows active preset
+### 🟣 Cinematic (Default)
+- **Render Distance**: 2500 studs
+- **Technology**: Future Lighting
+- **Shadows**: Enabled
+- **Post Processing**: Full (Bloom, Sun Rays, Color Correction, Atmosphere)
+- **Particles**: Enabled
+- **Best for**: Screenshots, cinematics, high-end PCs
 
-### 🔧 Graphics Settings Control
-- Render distance adjustment
-- Shadow quality (Global + Per-Part)
-- Particle effects toggle
-- Post-processing effects (Bloom, SunRays, DoF, Atmosphere)
-- Lighting technology (Legacy/ShadowMap/Future)
-- Fog control
-- Material reflectance
-- Environment lighting scales
+### 🟢 High
+- **Render Distance**: 1800 studs
+- **Technology**: Future Lighting
+- **Shadows**: Enabled
+- **Post Processing**: Enhanced (Bloom, Sun Rays, Color Correction)
+- **Particles**: Enabled
+- **Best for**: Gaming with great visuals
 
-### 💾 Smart Features
-- **Auto-save** - Remembers your quality preference
-- **Auto-apply** - Reapplies settings on respawn
-- **Batch Processing** - Efficient part processing to prevent lag
-- **Mobile Support** - Optimized UI for touch devices
-- **Desktop Hotkey** - Press `G` to toggle menu
-- **Queue System** - Prevents spam clicks and conflicts
+### 🟠 Medium
+- **Render Distance**: 900 studs
+- **Technology**: ShadowMap
+- **Shadows**: Enabled
+- **Post Processing**: Basic (Bloom, Color Correction)
+- **Particles**: Enabled
+- **Best for**: Balanced performance and quality
 
-## 📦 Installation
+### 🔴 Low
+- **Render Distance**: 300 studs
+- **Technology**: Legacy
+- **Shadows**: Disabled
+- **Post Processing**: Disabled
+- **Particles**: Disabled
+- **Best for**: Maximum FPS, low-end devices
 
-### Method 1: Direct Copy
-1. Open **ROBLOX Studio**
-2. Navigate to `StarterPlayer` → `StarterPlayerScripts`
+## 🚀 Installation
+
+1. Open your Roblox game in **Roblox Studio**
+2. Navigate to **StarterPlayer > StarterPlayerScripts**
 3. Create a new **LocalScript**
-4. Copy the entire script from `PerformanceSettings.lua`
-5. Paste into the LocalScript
-6. Save and test!
-
-### Method 2: Model Import
-1. Download the `.rbxm` model file (if available)
-2. Right-click `StarterPlayerScripts` in Explorer
-3. Select "Insert from File"
-4. Choose the downloaded model
+4. Copy and paste the entire script code
+5. Rename the script to `PerformanceSettings` (optional)
+6. Test your game!
 
 ## 🎯 Usage
 
+### Opening the Settings Panel
+- Click the **⚙** (gear) button on the right side of the screen
+- The panel will appear in the top-right corner
+
+### Changing Graphics Quality
+1. Open the settings panel
+2. Click on your desired quality preset:
+   - **CINEMATIC** - Maximum visual quality
+   - **HIGH** - Great visuals with good performance
+   - **MEDIUM** - Balanced settings
+   - **LOW** - Maximum performance
+3. Settings apply instantly!
+4. On mobile, the panel auto-closes after selection
+
+### Monitoring Performance
+- **FPS Counter** displays your current frames per second
+- Color changes based on performance:
+  - 🟢 Green: 55+ FPS (Excellent)
+  - 🟡 Yellow: 30-54 FPS (Good)
+  - 🔴 Red: Below 30 FPS (Poor)
+
+## 📱 Platform Support
+
 ### Desktop
-- Click the **⚙️ button** on the right edge of screen
-- Or press **G key** to toggle menu
-- Select your desired quality preset
-- Settings apply automatically
+- Panel Size: 200x260 pixels
+- Position: Top-right corner
+- Toggle Button: Right side (slightly below center)
+- Hover effects enabled
 
 ### Mobile
-- Tap the **⚙️ button** on the right edge
-- Choose quality preset
-- Menu auto-closes after selection
+- Panel Size: 140x200 pixels (compact)
+- Position: Top-right corner
+- Toggle Button: Right side
+- Auto-close after selection
+- Touch-optimized buttons
+
+## ⚙️ Technical Details
+
+### Performance Optimizations
+- **Debounced Operations**: Prevents excessive function calls
+- **Batch Processing**: Parts are processed in batches to avoid lag
+- **Async Tasks**: Heavy operations run asynchronously
+- **Queue System**: Prevents concurrent quality changes
+
+### Persistence
+- Settings are saved using Player Attributes
+- Automatically loads last used quality on respawn
+- Survives game restarts
+
+### Dynamic Updates
+- Automatically applies settings to newly spawned particles
+- Handles character respawns gracefully
+- Cleans up resources on player removal
 
 ## 🎨 Customization
 
-### Change Colors
+### Changing Colors
+Edit the `COLORS` table to customize preset colors:
 ```lua
 local COLORS = {
-    Low = Color3.fromRGB(255, 100, 100),      -- Red
-    Medium = Color3.fromRGB(255, 180, 60),    -- Orange
-    High = Color3.fromRGB(100, 200, 100),     -- Green
-    Cinematic = Color3.fromRGB(138, 43, 226)  -- Purple
+	Low = Color3.fromRGB(255, 100, 100),      -- Red
+	Medium = Color3.fromRGB(255, 180, 60),    -- Orange
+	High = Color3.fromRGB(100, 200, 100),     -- Green
+	Cinematic = Color3.fromRGB(138, 43, 226)  -- Purple
 }
 ```
 
-### Adjust Quality Presets
+### Adjusting Panel Position
+Modify the `mainFrame.Position` values:
 ```lua
-local QUALITY_PRESETS = {
-    Low = { 
-        renderDistance = 250,
-        shadowsEnabled = false,
-        particlesEnabled = false,
-        -- Add more settings...
-    }
-}
+-- Desktop
+mainFrame.Position = UDim2.new(1, -205, 0, 100)
+
+-- Mobile
+mainFrame.Position = UDim2.new(1, -145, 0, 80)
 ```
 
-### Change Hotkey
+### Changing Default Quality
+Edit the `currentQuality` variable:
 ```lua
-if input.KeyCode == Enum.KeyCode.G then  -- Change G to any key
-    screenGui.Enabled = not screenGui.Enabled
-end
+local currentQuality = "High"  -- Options: "Low", "Medium", "High", "Cinematic"
 ```
-
-### Modify Animation Speed
-```lua
--- Breathing speed
-local time = tick() * 1.5  -- Change 1.5 to adjust speed
-
--- Pulse speed
-local time = tick() * 2  -- Change 2 to adjust speed
-```
-
-## 🔧 Technical Details
-
-### Performance Optimizations
-- **Debouncing** - Prevents rapid-fire function calls
-- **Batch Processing** - Processes parts in groups of 100
-- **Task Spawning** - Async operations don't block main thread
-- **Queue System** - Prevents setting conflicts
-- **pcall Protection** - Error handling prevents crashes
-
-### Compatibility
-- ✅ Desktop (Windows, Mac)
-- ✅ Mobile (iOS, Android)
-- ✅ Tablet
-- ✅ All ROBLOX client versions
-- ✅ Works in all games (no special permissions needed)
-
-## 📸 Screenshots
-
-### Toggle Button States
-```
-Idle:     Breathing animation (subtle pulse)
-Hover:    Glow effect + scale 1.1x
-Click:    Bounce animation (squeeze → expand)
-```
-
-### Quality Comparison
-| Setting | Render Dist | Shadows | Particles | Post FX | Avg FPS |
-|---------|------------|---------|-----------|---------|---------|
-| Low | 250 | ❌ | ❌ | ❌ | 60+ |
-| Medium | 800 | ✅ | ✅ | ❌ | 50-60 |
-| High | 1500 | ✅ | ✅ | ✅ | 35-50 |
-| Cinematic | 2500 | ✅ | ✅ | ✅✅ | 25-35 |
 
 ## 🐛 Troubleshooting
 
-### Button Not Appearing
-- Check if script is in `StarterPlayerScripts`
-- Verify it's a `LocalScript`, not a regular Script
-- Check Output for error messages
+### Panel doesn't appear
+- Ensure the script is in `StarterPlayer > StarterPlayerScripts`
+- Check if it's a **LocalScript** (not a regular Script)
+- Look for errors in the Output window
 
-### Settings Not Applying
-- Wait 2 seconds after joining (auto-apply delay)
-- Check if game has custom lighting settings
-- Some games may override settings
+### Settings don't apply
+- Check the Output console for error messages
+- Ensure your game has proper lighting objects
+- Try restarting the test server
 
-### FPS Not Updating
-- This is normal - updates every 0.5 seconds
-- Check if `RunService` is accessible
+### FPS counter shows "--"
+- Wait a few seconds for initialization
+- The counter updates every 0.5 seconds
 
-### Animations Laggy
-- Reduce animation speed multipliers
-- Disable breathing animation if needed
-- Check overall game performance
+### Settings don't save
+- Player Attributes must be enabled in your game
+- Check if DataStore is configured properly
 
-## 📝 Changelog
+## 📊 Version History
 
-### Version 2.0 (Current)
-- ✨ Added animated toggle button
-- 🎨 Pulse effect on hover
-- 💫 Breathing animation when idle
-- 🎯 Bounce animation on click
-- 🔧 Improved mobile support
-- 🐛 Fixed edge positioning issues
+### v3.5 (Current)
+- ✅ Set Cinematic as default quality
+- ✅ Reordered buttons: Cinematic → High → Medium → Low
+- ✅ Fixed close button icon (changed from ✕ to X)
+- ✅ Repositioned panel to top-right corner
+- ✅ Fixed layout order for proper button arrangement
+- ✅ Enhanced UI with color-coded stroke indicators
+- ✅ Added dot indicators for active preset
+- ✅ Improved hover animations
 
-### Version 1.0
-- 🎮 Initial release
-- ⚙️ 4 quality presets
-- 📊 FPS counter
-- 💾 Auto-save settings
+### v3.4
+- Modern minimalist design
+- Instant close button response
+- Clean accent bars for active preset
+- Mobile optimized compact size
+
+### v3.0
+- Complete UI redesign
+- Added persistent settings
+- Improved FPS counter
+- Better mobile support
+
+## 📝 License
+
+This script is free to use in any Roblox game. Attribution is appreciated but not required.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Feel free to modify and improve this script! If you create an enhanced version, consider sharing it with the community.
 
-### How to Contribute
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 💡 Credits
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- ROBLOX Developer Hub for API documentation
-- Community feedback and suggestions
-- TweenService for smooth animations
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/roblox-performance-settings/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/roblox-performance-settings/discussions)
-- **ROBLOX DevForum**: [Link to thread]
-
-## ⭐ Star History
-
-If you find this useful, please consider giving it a star! ⭐
+Created for the Roblox development community
 
 ---
 
-Made with ❤️ for the ROBLOX community
+**Need help?** Check the Roblox Developer Forum or DevHub for additional support.
+
+**Enjoying this script?** Give it a ⭐ and share it with other developers!
