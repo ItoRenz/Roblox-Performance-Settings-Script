@@ -1,5 +1,5 @@
 -- ============================================
--- ROBLOX PERFORMANCE SETTINGS SCRIPT (SIMPLIFIED)
+-- ROBLOX PERFORMANCE SETTINGS SCRIPT v3.5
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
 -- ============================================
@@ -99,7 +99,8 @@ local COLORS = {
 	Cinematic = Color3.fromRGB(138, 43, 226)
 }
 
-local currentQuality = "Medium"
+-- DEFAULT QUALITY SET TO CINEMATIC
+local currentQuality = "Cinematic"
 
 -- ============================================
 -- UTILITY FUNCTIONS
@@ -116,7 +117,7 @@ local function getLastQuality()
 	local success, saved = pcall(function()
 		return player:GetAttribute("PreferredQuality")
 	end)
-	return (success and saved and QUALITY_PRESETS[saved]) and saved or currentQuality
+	return (success and saved and QUALITY_PRESETS[saved]) and saved or "Cinematic"
 end
 
 local function debounce(func, wait)
@@ -293,6 +294,7 @@ end
 -- GUI CREATION
 -- ============================================
 
+-- Settings Panel ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PerformanceGui"
 screenGui.Enabled = false
@@ -302,6 +304,7 @@ screenGui.IgnoreGuiInset = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
+-- Toggle Button ScreenGui
 local toggleScreenGui = Instance.new("ScreenGui")
 toggleScreenGui.Name = "PerformanceToggle"
 toggleScreenGui.ResetOnSpawn = false
@@ -310,168 +313,222 @@ toggleScreenGui.IgnoreGuiInset = true
 toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleScreenGui.Parent = playerGui
 
--- Main Frame (Compact) with optimized visibility
+-- Main Settings Frame (Redesigned with better proportions)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = isMobile and UDim2.new(0, 150, 0, 200) or UDim2.new(0, 180, 0, 230)
-mainFrame.Position = isMobile and UDim2.new(1, -155, 0.5, -100) or UDim2.new(1, -185, 0.5, -115)
-mainFrame.AnchorPoint = Vector2.new(1, 0.5)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-mainFrame.BackgroundTransparency = 0.05
+mainFrame.Name = "MainFrame"
+mainFrame.Size = isMobile and UDim2.new(0, 140, 0, 200) or UDim2.new(0, 200, 0, 260)
+mainFrame.Position = isMobile and UDim2.new(1, -145, 0, 80) or UDim2.new(1, -205, 0, 100)
+mainFrame.AnchorPoint = Vector2.new(1, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
 mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Visible = true
+mainFrame.ClipsDescendants = false
 mainFrame.Parent = screenGui
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.CornerRadius = UDim.new(0, 14)
 frameCorner.Parent = mainFrame
 
--- Header (Compact)
+-- Outer glow effect
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(60, 60, 75)
+frameStroke.Thickness = 1
+frameStroke.Transparency = 0.5
+frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+frameStroke.Parent = mainFrame
+
+-- Header with gradient
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 30)
-header.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-header.BackgroundTransparency = 0.3
+header.Name = "Header"
+header.Size = UDim2.new(1, 0, 0, isMobile and 32 or 38)
+header.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
 header.BorderSizePixel = 0
 header.Parent = mainFrame
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 10)
+headerCorner.CornerRadius = UDim.new(0, 14)
 headerCorner.Parent = header
 
+local headerCover = Instance.new("Frame")
+headerCover.Size = UDim2.new(1, 0, 0, 14)
+headerCover.Position = UDim2.new(0, 0, 1, -14)
+headerCover.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
+headerCover.BorderSizePixel = 0
+headerCover.Parent = header
+
+-- Title with icon
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -35, 1, 0)
-titleLabel.Position = UDim2.new(0, 8, 0, 0)
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -40, 1, 0)
+titleLabel.Position = UDim2.new(0, isMobile and 8 or 12, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "⚡ SETTINGS"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = isMobile and 9 or 10
+titleLabel.Text = "⚡ GRAPHICS"
+titleLabel.TextColor3 = Color3.fromRGB(245, 245, 250)
+titleLabel.TextSize = isMobile and 10 or 13
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = header
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Name = "CloseButton"
-closeBtn.Size = UDim2.new(0, 22, 0, 22)
-closeBtn.Position = UDim2.new(1, -26, 0, 4)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-closeBtn.BackgroundTransparency = 0.15
+closeBtn.Size = UDim2.new(0, isMobile and 24 or 28, 0, isMobile and 24 or 28)
+closeBtn.Position = UDim2.new(1, isMobile and -28 or -32, 0.5, 0)
+closeBtn.AnchorPoint = Vector2.new(0, 0.5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 62)
 closeBtn.BorderSizePixel = 0
 closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 12
+closeBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+closeBtn.TextSize = isMobile and 12 or 14
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.AutoButtonColor = false
 closeBtn.Parent = header
 
 local closeBtnCorner = Instance.new("UICorner")
-closeBtnCorner.CornerRadius = UDim.new(0, 6)
+closeBtnCorner.CornerRadius = UDim.new(0, 7)
 closeBtnCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function()
-	-- Immediate close with quick fade
-	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local tween = TweenService:Create(mainFrame, tweenInfo, {BackgroundTransparency = 1})
-	tween:Play()
-	
-	for _, child in ipairs(mainFrame:GetDescendants()) do
-		if child:IsA("GuiObject") then
-			pcall(function()
-				TweenService:Create(child, tweenInfo, {
-					BackgroundTransparency = 1,
-					TextTransparency = 1
-				}):Play()
-			end)
-		end
-	end
-	
-	task.wait(0.1)
 	screenGui.Enabled = false
-	
-	-- Reset transparencies for next open
-	mainFrame.BackgroundTransparency = 0.05
-	for _, child in ipairs(mainFrame:GetDescendants()) do
-		if child:IsA("GuiObject") then
-			pcall(function()
-				if child:IsA("TextButton") or child:IsA("TextLabel") then
-					child.BackgroundTransparency = child.Name == "CloseButton" and 0.15 or (child:IsA("TextLabel") and 1 or 0.4)
-					child.TextTransparency = 0
-				elseif child:IsA("Frame") then
-					child.BackgroundTransparency = child == header and 0.3 or (child == container and 1 or 0.05)
-				end
-			end)
-		end
-	end
+end)
+
+closeBtn.MouseEnter:Connect(function()
+	TweenService:Create(closeBtn, TweenInfo.new(0.15), {
+		BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+	}):Play()
+end)
+
+closeBtn.MouseLeave:Connect(function()
+	TweenService:Create(closeBtn, TweenInfo.new(0.15), {
+		BackgroundColor3 = Color3.fromRGB(50, 50, 62)
+	}):Play()
 end)
 
 -- Buttons Container
 local container = Instance.new("Frame")
-container.Size = UDim2.new(1, -10, 1, -38)
-container.Position = UDim2.new(0, 5, 0, 33)
+container.Name = "Container"
+container.Size = UDim2.new(1, isMobile and -12 or -16, 1, isMobile and -42 or -50)
+container.Position = UDim2.new(0, isMobile and 6 or 8, 0, isMobile and 36 or 42)
 container.BackgroundTransparency = 1
 container.Parent = mainFrame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 4)
+layout.Padding = UDim.new(0, isMobile and 4 or 5)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = container
-
--- Status Label
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 14)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Current: " .. getLastQuality()
-statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextSize = isMobile and 8 or 9
-statusLabel.Font = Enum.Font.GothamSemibold
-statusLabel.Parent = container
 
 -- FPS Counter
 local fpsLabel = Instance.new("TextLabel")
-fpsLabel.Size = UDim2.new(1, 0, 0, 12)
+fpsLabel.Name = "FPSLabel"
+fpsLabel.Size = UDim2.new(1, 0, 0, isMobile and 16 or 18)
 fpsLabel.BackgroundTransparency = 1
 fpsLabel.Text = "FPS: --"
-fpsLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-fpsLabel.TextSize = isMobile and 7 or 8
-fpsLabel.Font = Enum.Font.GothamSemibold
+fpsLabel.TextColor3 = Color3.fromRGB(120, 220, 120)
+fpsLabel.TextSize = isMobile and 9 or 11
+fpsLabel.Font = Enum.Font.GothamBold
+fpsLabel.LayoutOrder = 5
 fpsLabel.Parent = container
 
--- Quality Buttons (Compact)
-local qualities = {"Low", "Medium", "High", "Cinematic"}
+-- Status Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Name = "StatusLabel"
+statusLabel.Size = UDim2.new(1, 0, 0, isMobile and 16 or 18)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Active: " .. getLastQuality()
+statusLabel.TextColor3 = Color3.fromRGB(190, 190, 200)
+statusLabel.TextSize = isMobile and 8 or 10
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.LayoutOrder = 6
+statusLabel.Parent = container
+
+-- Quality Buttons in correct order: Cinematic, High, Medium, Low
+local qualities = {"Cinematic", "High", "Medium", "Low"}
 local buttons = {}
 
-for _, qualityName in ipairs(qualities) do
+for index, qualityName in ipairs(qualities) do
 	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, 0, 0, isMobile and 28 or 32)
-	button.BackgroundColor3 = COLORS[qualityName]
-	button.BackgroundTransparency = 0.4
+	button.Name = qualityName .. "Button"
+	button.Size = UDim2.new(1, 0, 0, isMobile and 28 or 35)
+	button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 	button.BorderSizePixel = 0
 	button.Text = qualityName:upper()
-	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.TextSize = isMobile and 9 or 10
+	button.TextColor3 = Color3.fromRGB(230, 230, 240)
+	button.TextSize = isMobile and 9 or 11
 	button.Font = Enum.Font.GothamBold
 	button.AutoButtonColor = false
+	button.LayoutOrder = index
 	button.Parent = container
 	
 	buttons[qualityName] = button
 	
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 6)
+	corner.CornerRadius = UDim.new(0, isMobile and 7 or 9)
 	corner.Parent = button
 	
+	-- Stroke for selected state
+	local buttonStroke = Instance.new("UIStroke")
+	buttonStroke.Name = "ButtonStroke"
+	buttonStroke.Color = COLORS[qualityName]
+	buttonStroke.Thickness = 0
+	buttonStroke.Transparency = 0
+	buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	buttonStroke.Parent = button
+	
+	-- Quality indicator dot
+	local indicator = Instance.new("Frame")
+	indicator.Name = "Indicator"
+	indicator.Size = UDim2.new(0, isMobile and 6 or 8, 0, isMobile and 6 or 8)
+	indicator.Position = UDim2.new(0, isMobile and 8 or 10, 0.5, 0)
+	indicator.AnchorPoint = Vector2.new(0, 0.5)
+	indicator.BackgroundColor3 = COLORS[qualityName]
+	indicator.BorderSizePixel = 0
+	indicator.Visible = false
+	indicator.Parent = button
+	
+	local indicatorCorner = Instance.new("UICorner")
+	indicatorCorner.CornerRadius = UDim.new(1, 0)
+	indicatorCorner.Parent = indicator
+	
+	-- Button Hover
 	button.MouseEnter:Connect(function()
-		button.BackgroundTransparency = 0.2
+		if currentQuality ~= qualityName then
+			TweenService:Create(button, TweenInfo.new(0.2), {
+				BackgroundColor3 = Color3.fromRGB(50, 50, 62)
+			}):Play()
+			TweenService:Create(buttonStroke, TweenInfo.new(0.2), {
+				Thickness = 1.5
+			}):Play()
+		end
 	end)
 	
 	button.MouseLeave:Connect(function()
-		button.BackgroundTransparency = currentQuality == qualityName and 0.1 or 0.4
+		if currentQuality ~= qualityName then
+			TweenService:Create(button, TweenInfo.new(0.2), {
+				BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+			}):Play()
+			TweenService:Create(buttonStroke, TweenInfo.new(0.2), {
+				Thickness = 0
+			}):Play()
+		end
 	end)
 	
+	-- Button Click
 	button.MouseButton1Click:Connect(function()
 		applyPerformanceSettings(qualityName)
-		statusLabel.Text = "Current: " .. qualityName
+		statusLabel.Text = "Active: " .. qualityName
 		
 		for name, btn in pairs(buttons) do
-			btn.BackgroundTransparency = name == qualityName and 0.1 or 0.4
+			local stroke = btn:FindFirstChild("ButtonStroke")
+			local ind = btn:FindFirstChild("Indicator")
+			
+			if name == qualityName then
+				btn.BackgroundColor3 = Color3.fromRGB(50, 50, 62)
+				stroke.Thickness = 2
+				ind.Visible = true
+			else
+				btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+				stroke.Thickness = 0
+				ind.Visible = false
+			end
 		end
 		
 		if isMobile then
@@ -482,32 +539,28 @@ for _, qualityName in ipairs(qualities) do
 end
 
 -- ============================================
--- TOGGLE BUTTON WITH PLATFORM-SPECIFIC POSITIONING
+-- TOGGLE BUTTON
 -- ============================================
 
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "SettingsToggleButton"
 
--- DISTINCT POSITIONING FOR MOBILE VS PC
 if isMobile then
-	-- Mobile: Right side, slightly below center
-	toggleButton.Size = UDim2.new(0, 33, 0, 33)
-	toggleButton.Position = UDim2.new(1, -38, 0.5, 12)
+	toggleButton.Size = UDim2.new(0, 36, 0, 36)
+	toggleButton.Position = UDim2.new(1, -40, 0.5, 30)
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 else
-	-- PC: Right side, slightly below center
-	toggleButton.Size = UDim2.new(0, 35, 0, 35)
-	toggleButton.Position = UDim2.new(1, -39, 0.5, 10)
+	toggleButton.Size = UDim2.new(0, 40, 0, 40)
+	toggleButton.Position = UDim2.new(1, -44, 0.5, 10)
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 end
 
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-toggleButton.BackgroundTransparency = 0.15
+toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 52)
 toggleButton.BorderSizePixel = 0
-toggleButton.Text = "⚙️"
-toggleButton.TextSize = isMobile and 16 or 17
+toggleButton.Text = "⚙"
+toggleButton.TextSize = isMobile and 18 or 20
 toggleButton.Font = Enum.Font.GothamBold
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextColor3 = Color3.fromRGB(235, 235, 245)
 toggleButton.Parent = toggleScreenGui
 
 local toggleCorner = Instance.new("UICorner")
@@ -515,99 +568,54 @@ toggleCorner.CornerRadius = UDim.new(0.5, 0)
 toggleCorner.Parent = toggleButton
 
 local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(100, 100, 120)
-toggleStroke.Thickness = isMobile and 2 or 1.5
-toggleStroke.Transparency = 0.4
+toggleStroke.Color = Color3.fromRGB(70, 70, 85)
+toggleStroke.Thickness = 2
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
 
--- Simple Rotation Animation
-local rotationConnection
 local baseSize = toggleButton.Size
-local isRotating = false
-
-local function startRotation()
-	if isRotating then return end
-	isRotating = true
-	
-	local startTime = tick()
-	rotationConnection = RunService.Heartbeat:Connect(function()
-		local elapsed = tick() - startTime
-		toggleButton.Rotation = (elapsed * 60) % 360
-	end)
-	
-	task.wait(0.5)
-	if rotationConnection then
-		rotationConnection:Disconnect()
-		rotationConnection = nil
-	end
-	
-	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-	TweenService:Create(toggleButton, tweenInfo, {Rotation = 0}):Play()
-	
-	isRotating = false
-end
-
--- Click Animation with debounce
 local isToggling = false
+
 toggleButton.MouseButton1Click:Connect(function()
 	if isToggling then return end
 	isToggling = true
 	
-	-- Toggle immediately for responsiveness
 	screenGui.Enabled = not screenGui.Enabled
 	
-	-- Then play animation
 	task.spawn(function()
-		-- Scale down
-		local tweenInfo1 = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-		local tween1 = TweenService:Create(toggleButton, tweenInfo1, {
-			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.85, baseSize.Y.Scale, baseSize.Y.Offset * 0.85),
-			BackgroundColor3 = Color3.fromRGB(80, 120, 255)
-		})
-		tween1:Play()
-		tween1.Completed:Wait()
+		local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad)
 		
-		-- Scale up with rotation
-		local tweenInfo2 = TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-		local tween2 = TweenService:Create(toggleButton, tweenInfo2, {
-			Size = baseSize,
-			BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-		})
-		tween2:Play()
+		TweenService:Create(toggleButton, tweenInfo, {
+			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.9, baseSize.Y.Scale, baseSize.Y.Offset * 0.9)
+		}):Play()
 		
-		startRotation()
+		task.wait(0.1)
 		
-		task.wait(0.5)
+		TweenService:Create(toggleButton, TweenInfo.new(0.15, Enum.EasingStyle.Back), {
+			Size = baseSize
+		}):Play()
+		
+		task.wait(0.15)
 		isToggling = false
 	end)
 end)
 
--- Hover Animation (PC Only)
 if not isMobile then
 	toggleButton.MouseEnter:Connect(function()
-		local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
-		TweenService:Create(toggleButton, tweenInfo, {
-			BackgroundTransparency = 0,
-			BackgroundColor3 = Color3.fromRGB(60, 80, 120),
-			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 1.15, baseSize.Y.Scale, baseSize.Y.Offset * 1.15)
+		TweenService:Create(toggleButton, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(60, 80, 115)
 		}):Play()
-		TweenService:Create(toggleStroke, tweenInfo, {
-			Transparency = 0.1,
-			Color = Color3.fromRGB(120, 160, 255)
+		TweenService:Create(toggleStroke, TweenInfo.new(0.2), {
+			Color = Color3.fromRGB(95, 125, 170)
 		}):Play()
 	end)
 	
 	toggleButton.MouseLeave:Connect(function()
-		local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad)
-		TweenService:Create(toggleButton, tweenInfo, {
-			BackgroundTransparency = 0.15,
-			BackgroundColor3 = Color3.fromRGB(40, 40, 50),
-			Size = baseSize
+		TweenService:Create(toggleButton, TweenInfo.new(0.2), {
+			BackgroundColor3 = Color3.fromRGB(40, 40, 52)
 		}):Play()
-		TweenService:Create(toggleStroke, tweenInfo, {
-			Transparency = 0.4,
-			Color = Color3.fromRGB(100, 100, 120)
+		TweenService:Create(toggleStroke, TweenInfo.new(0.2), {
+			Color = Color3.fromRGB(70, 70, 85)
 		}):Play()
 	end)
 end
@@ -626,7 +634,7 @@ local fpsConnection = RunService.RenderStepped:Connect(function()
 	if now - lastUpdate >= 0.5 then
 		local fps = math.floor(frameCount / (now - lastUpdate))
 		fpsLabel.Text = "FPS: " .. fps
-		fpsLabel.TextColor3 = fps >= 55 and Color3.fromRGB(100, 255, 100)
+		fpsLabel.TextColor3 = fps >= 55 and Color3.fromRGB(120, 220, 120)
 			or fps >= 30 and Color3.fromRGB(255, 200, 100)
 			or Color3.fromRGB(255, 100, 100)
 		
@@ -667,10 +675,19 @@ end)
 -- ============================================
 
 task.delay(2, function()
-	applyPerformanceSettings(getLastQuality())
-	if buttons[currentQuality] then
-		buttons[currentQuality].BackgroundTransparency = 0.1
+	local savedQuality = getLastQuality()
+	applyPerformanceSettings(savedQuality)
+	
+	-- Set initial button states
+	if buttons[savedQuality] then
+		buttons[savedQuality].BackgroundColor3 = Color3.fromRGB(50, 50, 62)
+		local stroke = buttons[savedQuality]:FindFirstChild("ButtonStroke")
+		local indicator = buttons[savedQuality]:FindFirstChild("Indicator")
+		if stroke then stroke.Thickness = 2 end
+		if indicator then indicator.Visible = true end
 	end
+	
+	statusLabel.Text = "Active: " .. savedQuality
 end)
 
 -- ============================================
@@ -678,7 +695,6 @@ end)
 -- ============================================
 
 local function cleanup()
-	if rotationConnection then rotationConnection:Disconnect() end
 	if fpsConnection then fpsConnection:Disconnect() end
 	if characterConnection then characterConnection:Disconnect() end
 	if descendantConnection then descendantConnection:Disconnect() end
@@ -697,14 +713,10 @@ end)
 -- ============================================
 
 print("═══════════════════════════════════════")
-print("🎮 Performance Settings Loaded v3.2")
+print("🎮 Performance Settings v3.5 Loaded")
 print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
-if isMobile then
-	print("📍 Toggle Button: Right side (33x33px) at (1, -38, 0.5, 12)")
-else
-	print("📍 Toggle Button: Right side (35x35px) at (1, -39, 0.5, 10)")
-end
-print("📌 Click ⚙️ button to open settings")
-print("✨ Simple rotation animation on click")
-print("🔧 Compact UI - Optimized layout")
+print("⭐ Default Quality: Cinematic")
+print("📋 Button Order: Low → Medium → High → Cinematic")
+print("✨ Enhanced UI with color-coded indicators")
+print("⚡ Smooth animations and hover effects")
 print("═══════════════════════════════════════")
