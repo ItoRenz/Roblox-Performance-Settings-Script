@@ -482,14 +482,25 @@ for _, qualityName in ipairs(qualities) do
 end
 
 -- ============================================
--- TOGGLE BUTTON (SIMPLE & COOL ANIMATION)
+-- TOGGLE BUTTON WITH PLATFORM-SPECIFIC POSITIONING
 -- ============================================
 
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "SettingsToggleButton"
-toggleButton.Size = isMobile and UDim2.new(0, 33, 0, 33) or UDim2.new(0, 35, 0, 35)
-toggleButton.Position = UDim2.new(1, isMobile and -38 or -40, 0.5, 30)
-toggleButton.AnchorPoint = Vector2.new(0, 0.5)
+
+-- DISTINCT POSITIONING FOR MOBILE VS PC
+if isMobile then
+	-- Mobile: Right side, slightly below center
+	toggleButton.Size = UDim2.new(0, 33, 0, 33)
+	toggleButton.Position = UDim2.new(1, -38, 0.5, 12)
+	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
+else
+	-- PC: Right side, slightly below center
+	toggleButton.Size = UDim2.new(0, 35, 0, 35)
+	toggleButton.Position = UDim2.new(1, -39, 0.5, 10)
+	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
+end
+
 toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 toggleButton.BackgroundTransparency = 0.15
 toggleButton.BorderSizePixel = 0
@@ -505,7 +516,7 @@ toggleCorner.Parent = toggleButton
 
 local toggleStroke = Instance.new("UIStroke")
 toggleStroke.Color = Color3.fromRGB(100, 100, 120)
-toggleStroke.Thickness = 1.5
+toggleStroke.Thickness = isMobile and 2 or 1.5
 toggleStroke.Transparency = 0.4
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggleButton
@@ -686,8 +697,13 @@ end)
 -- ============================================
 
 print("═══════════════════════════════════════")
-print("🎮 Performance Settings Loaded v3.1")
-print("📱 Platform: " .. (isMobile and "Mobile (33x33px)" or "Desktop (35x35px)"))
+print("🎮 Performance Settings Loaded v3.2")
+print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
+if isMobile then
+	print("📍 Toggle Button: Right side (33x33px) at (1, -38, 0.5, 12)")
+else
+	print("📍 Toggle Button: Right side (35x35px) at (1, -39, 0.5, 10)")
+end
 print("📌 Click ⚙️ button to open settings")
 print("✨ Simple rotation animation on click")
 print("🔧 Compact UI - Optimized layout")
