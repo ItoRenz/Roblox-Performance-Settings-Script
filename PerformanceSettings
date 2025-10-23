@@ -551,7 +551,7 @@ if isMobile then
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 else
 	toggleButton.Size = UDim2.new(0, 40, 0, 40)
-	toggleButton.Position = UDim2.new(1, -44, 0.5, 10)
+	toggleButton.Position = UDim2.new(1, -44, 0.5, 15)
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 end
 
