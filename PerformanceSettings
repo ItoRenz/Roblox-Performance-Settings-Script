@@ -1,7 +1,10 @@
 -- ============================================
 -- ROBLOX PERFORMANCE SETTINGS SCRIPT v3.5
+-- Author: ItoRenz00
 -- ============================================
 -- Location: StarterPlayer > StarterPlayerScripts
+-- Description: Advanced graphics quality manager with FPS counter
+-- and dynamic performance optimization
 -- ============================================
 
 local Players = game:GetService("Players")
@@ -22,7 +25,7 @@ local camera = Workspace.CurrentCamera or Workspace:GetPropertyChangedSignal("Cu
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 local QUALITY_PRESETS = {
-	Low = { 
+	Low = {
 		renderDistance = 300,
 		shadowsEnabled = false,
 		particlesEnabled = false,
@@ -39,7 +42,7 @@ local QUALITY_PRESETS = {
 		outdoorAmbient = Color3.fromRGB(120, 120, 120),
 		reflectance = 0
 	},
-	Medium = { 
+	Medium = {
 		renderDistance = 900,
 		shadowsEnabled = true,
 		particlesEnabled = true,
@@ -56,7 +59,7 @@ local QUALITY_PRESETS = {
 		outdoorAmbient = Color3.fromRGB(130, 130, 130),
 		reflectance = 0.15
 	},
-	High = { 
+	High = {
 		renderDistance = 1800,
 		shadowsEnabled = true,
 		particlesEnabled = true,
@@ -73,7 +76,7 @@ local QUALITY_PRESETS = {
 		outdoorAmbient = Color3.fromRGB(135, 135, 135),
 		reflectance = 0.25
 	},
-	Cinematic = { 
+	Cinematic = {
 		renderDistance = 2500,
 		shadowsEnabled = true,
 		particlesEnabled = true,
@@ -99,7 +102,7 @@ local COLORS = {
 	Cinematic = Color3.fromRGB(138, 43, 226)
 }
 
--- DEFAULT QUALITY SET TO CINEMATIC
+-- Default quality preset
 local currentQuality = "Cinematic"
 
 -- ============================================
@@ -143,16 +146,16 @@ local function applyPerformanceSettings(qualityName)
 		applyQueue = qualityName
 		return
 	end
-	
+
 	local preset = QUALITY_PRESETS[qualityName]
 	if not preset then return end
-	
+
 	isApplying = true
-	
+
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	print("🎮 Applying " .. qualityName:upper() .. " Graphics Settings")
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	
+
 	-- Render Distance
 	pcall(function()
 		if player.Character then
@@ -161,8 +164,8 @@ local function applyPerformanceSettings(qualityName)
 		end
 		print("✓ Render Distance: " .. preset.renderDistance)
 	end)
-	
-	-- Lighting
+
+	-- Lighting Configuration
 	pcall(function()
 		Lighting.Technology = preset.technology
 		Lighting.GlobalShadows = preset.shadowsEnabled
@@ -174,15 +177,15 @@ local function applyPerformanceSettings(qualityName)
 		print("✓ Lighting: " .. tostring(preset.technology))
 		print("✓ Shadows: " .. (preset.shadowsEnabled and "ON" or "OFF"))
 	end)
-	
-	-- Parts Processing
+
+	-- Parts Processing (Batch Processing)
 	task.spawn(function()
 		local partsProcessed = 0
 		local batchSize = 50
-		
+
 		pcall(function()
 			local allParts = Workspace:GetDescendants()
-			
+
 			for i = 1, #allParts do
 				local obj = allParts[i]
 				if obj:IsA("BasePart") and obj.Parent then
@@ -194,24 +197,24 @@ local function applyPerformanceSettings(qualityName)
 					end)
 					partsProcessed = partsProcessed + 1
 				end
-				
+
 				if i % batchSize == 0 then
 					task.wait()
 				end
 			end
-			
+
 			print("✓ Parts Processed: " .. partsProcessed)
 		end)
 	end)
-	
-	-- Particles
+
+	-- Particle Effects Management
 	task.spawn(function()
 		local particleCount = 0
 		pcall(function()
 			for _, obj in ipairs(Workspace:GetDescendants()) do
 				if (obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles")) and obj.Parent then
-					pcall(function() 
-						obj.Enabled = preset.particlesEnabled 
+					pcall(function()
+						obj.Enabled = preset.particlesEnabled
 					end)
 					particleCount = particleCount + 1
 				end
@@ -219,36 +222,36 @@ local function applyPerformanceSettings(qualityName)
 			print("✓ Particles: " .. (preset.particlesEnabled and "ON" or "OFF"))
 		end)
 	end)
-	
-	-- Post Processing
+
+	-- Post Processing Effects
 	pcall(function()
 		for _, effect in ipairs(Lighting:GetChildren()) do
 			if effect:IsA("PostEffect") or effect:IsA("Atmosphere") then
 				pcall(function() effect:Destroy() end)
 			end
 		end
-		
+
 		if preset.postProcessing then
 			local bloom = Instance.new("BloomEffect")
 			bloom.Intensity = qualityName == "Cinematic" and 0.5 or (qualityName == "High" and 0.3 or 0.2)
 			bloom.Size = qualityName == "Cinematic" and 32 or (qualityName == "High" and 24 or 16)
 			bloom.Threshold = qualityName == "Cinematic" and 1.2 or (qualityName == "High" and 1.5 or 2)
 			bloom.Parent = Lighting
-			
+
 			if qualityName == "High" or qualityName == "Cinematic" then
 				local sunrays = Instance.new("SunRaysEffect")
 				sunrays.Intensity = qualityName == "Cinematic" and 0.05 or 0.03
 				sunrays.Spread = qualityName == "Cinematic" and 0.8 or 0.6
 				sunrays.Parent = Lighting
 			end
-			
+
 			local colorCorrection = Instance.new("ColorCorrectionEffect")
 			colorCorrection.Brightness = qualityName == "Cinematic" and 0.03 or (qualityName == "High" and 0.02 or 0.01)
 			colorCorrection.Contrast = qualityName == "Cinematic" and 0.1 or (qualityName == "High" and 0.05 or 0.02)
 			colorCorrection.Saturation = qualityName == "Cinematic" and 0.15 or (qualityName == "High" and 0.08 or 0.05)
 			colorCorrection.TintColor = Color3.fromRGB(255, 255, 255)
 			colorCorrection.Parent = Lighting
-			
+
 			if qualityName == "Cinematic" then
 				local atmosphere = Instance.new("Atmosphere")
 				atmosphere.Density = 0.3
@@ -259,14 +262,14 @@ local function applyPerformanceSettings(qualityName)
 				atmosphere.Haze = 1.2
 				atmosphere.Parent = Lighting
 			end
-			
+
 			print("✓ Post Processing: " .. qualityName)
 		else
 			print("✓ Post Processing: OFF")
 		end
 	end)
-	
-	-- Fog
+
+	-- Fog Configuration
 	pcall(function()
 		Lighting.FogEnabled = preset.fogEnabled
 		if preset.fogEnabled then
@@ -276,13 +279,13 @@ local function applyPerformanceSettings(qualityName)
 		end
 		print("✓ Fog: " .. (preset.fogEnabled and "ON" or "OFF"))
 	end)
-	
+
 	print("✅ " .. qualityName:upper() .. " Applied!")
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	
+
 	saveQuality(qualityName)
 	isApplying = false
-	
+
 	if applyQueue then
 		local queued = applyQueue
 		applyQueue = nil
@@ -313,7 +316,7 @@ toggleScreenGui.IgnoreGuiInset = true
 toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleScreenGui.Parent = playerGui
 
--- Main Settings Frame (Redesigned with better proportions)
+-- Main Settings Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = isMobile and UDim2.new(0, 140, 0, 200) or UDim2.new(0, 200, 0, 260)
@@ -328,7 +331,6 @@ local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 14)
 frameCorner.Parent = mainFrame
 
--- Outer glow effect
 local frameStroke = Instance.new("UIStroke")
 frameStroke.Color = Color3.fromRGB(60, 60, 75)
 frameStroke.Thickness = 1
@@ -336,7 +338,7 @@ frameStroke.Transparency = 0.5
 frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 frameStroke.Parent = mainFrame
 
--- Header with gradient
+-- Header Section
 local header = Instance.new("Frame")
 header.Name = "Header"
 header.Size = UDim2.new(1, 0, 0, isMobile and 32 or 38)
@@ -355,7 +357,7 @@ headerCover.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
 headerCover.BorderSizePixel = 0
 headerCover.Parent = header
 
--- Title with icon
+-- Title Label
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(1, -40, 1, 0)
@@ -368,6 +370,7 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = header
 
+-- Close Button
 local closeBtn = Instance.new("TextButton")
 closeBtn.Name = "CloseButton"
 closeBtn.Size = UDim2.new(0, isMobile and 24 or 28, 0, isMobile and 24 or 28)
@@ -440,7 +443,7 @@ statusLabel.Font = Enum.Font.Gotham
 statusLabel.LayoutOrder = 6
 statusLabel.Parent = container
 
--- Quality Buttons in correct order: Cinematic, High, Medium, Low
+-- Quality Buttons
 local qualities = {"Cinematic", "High", "Medium", "Low"}
 local buttons = {}
 
@@ -457,14 +460,13 @@ for index, qualityName in ipairs(qualities) do
 	button.AutoButtonColor = false
 	button.LayoutOrder = index
 	button.Parent = container
-	
+
 	buttons[qualityName] = button
-	
+
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, isMobile and 7 or 9)
 	corner.Parent = button
-	
-	-- Stroke for selected state
+
 	local buttonStroke = Instance.new("UIStroke")
 	buttonStroke.Name = "ButtonStroke"
 	buttonStroke.Color = COLORS[qualityName]
@@ -472,8 +474,7 @@ for index, qualityName in ipairs(qualities) do
 	buttonStroke.Transparency = 0
 	buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	buttonStroke.Parent = button
-	
-	-- Quality indicator dot
+
 	local indicator = Instance.new("Frame")
 	indicator.Name = "Indicator"
 	indicator.Size = UDim2.new(0, isMobile and 6 or 8, 0, isMobile and 6 or 8)
@@ -483,12 +484,12 @@ for index, qualityName in ipairs(qualities) do
 	indicator.BorderSizePixel = 0
 	indicator.Visible = false
 	indicator.Parent = button
-	
+
 	local indicatorCorner = Instance.new("UICorner")
 	indicatorCorner.CornerRadius = UDim.new(1, 0)
 	indicatorCorner.Parent = indicator
-	
-	-- Button Hover
+
+	-- Button Interactions
 	button.MouseEnter:Connect(function()
 		if currentQuality ~= qualityName then
 			TweenService:Create(button, TweenInfo.new(0.2), {
@@ -499,7 +500,7 @@ for index, qualityName in ipairs(qualities) do
 			}):Play()
 		end
 	end)
-	
+
 	button.MouseLeave:Connect(function()
 		if currentQuality ~= qualityName then
 			TweenService:Create(button, TweenInfo.new(0.2), {
@@ -510,16 +511,15 @@ for index, qualityName in ipairs(qualities) do
 			}):Play()
 		end
 	end)
-	
-	-- Button Click
+
 	button.MouseButton1Click:Connect(function()
 		applyPerformanceSettings(qualityName)
 		statusLabel.Text = "Active: " .. qualityName
-		
+
 		for name, btn in pairs(buttons) do
 			local stroke = btn:FindFirstChild("ButtonStroke")
 			local ind = btn:FindFirstChild("Indicator")
-			
+
 			if name == qualityName then
 				btn.BackgroundColor3 = Color3.fromRGB(50, 50, 62)
 				stroke.Thickness = 2
@@ -530,7 +530,7 @@ for index, qualityName in ipairs(qualities) do
 				ind.Visible = false
 			end
 		end
-		
+
 		if isMobile then
 			task.wait(0.3)
 			screenGui.Enabled = false
@@ -546,12 +546,12 @@ local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "SettingsToggleButton"
 
 if isMobile then
-	toggleButton.Size = UDim2.new(0, 36, 0, 36)
-	toggleButton.Position = UDim2.new(1, -40, 0.5, 30)
+	toggleButton.Size = UDim2.new(0, 33, 0, 33)
+	toggleButton.Position = UDim2.new(1, -38, 0.5, 30)
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 else
-	toggleButton.Size = UDim2.new(0, 40, 0, 40)
-	toggleButton.Position = UDim2.new(1, -44, 0.5, 15)
+	toggleButton.Size = UDim2.new(0, 35, 0, 35)
+	toggleButton.Position = UDim2.new(1, -40, 0.5, 15)
 	toggleButton.AnchorPoint = Vector2.new(0, 0.5)
 end
 
@@ -579,22 +579,22 @@ local isToggling = false
 toggleButton.MouseButton1Click:Connect(function()
 	if isToggling then return end
 	isToggling = true
-	
+
 	screenGui.Enabled = not screenGui.Enabled
-	
+
 	task.spawn(function()
 		local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad)
-		
+
 		TweenService:Create(toggleButton, tweenInfo, {
 			Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset * 0.9, baseSize.Y.Scale, baseSize.Y.Offset * 0.9)
 		}):Play()
-		
+
 		task.wait(0.1)
-		
+
 		TweenService:Create(toggleButton, TweenInfo.new(0.15, Enum.EasingStyle.Back), {
 			Size = baseSize
 		}):Play()
-		
+
 		task.wait(0.15)
 		isToggling = false
 	end)
@@ -609,7 +609,7 @@ if not isMobile then
 			Color = Color3.fromRGB(95, 125, 170)
 		}):Play()
 	end)
-	
+
 	toggleButton.MouseLeave:Connect(function()
 		TweenService:Create(toggleButton, TweenInfo.new(0.2), {
 			BackgroundColor3 = Color3.fromRGB(40, 40, 52)
@@ -630,14 +630,14 @@ local frameCount = 0
 local fpsConnection = RunService.RenderStepped:Connect(function()
 	frameCount = frameCount + 1
 	local now = tick()
-	
+
 	if now - lastUpdate >= 0.5 then
 		local fps = math.floor(frameCount / (now - lastUpdate))
 		fpsLabel.Text = "FPS: " .. fps
 		fpsLabel.TextColor3 = fps >= 55 and Color3.fromRGB(120, 220, 120)
 			or fps >= 30 and Color3.fromRGB(255, 200, 100)
 			or Color3.fromRGB(255, 100, 100)
-		
+
 		frameCount = 0
 		lastUpdate = now
 	end
@@ -677,8 +677,7 @@ end)
 task.delay(2, function()
 	local savedQuality = getLastQuality()
 	applyPerformanceSettings(savedQuality)
-	
-	-- Set initial button states
+
 	if buttons[savedQuality] then
 		buttons[savedQuality].BackgroundColor3 = Color3.fromRGB(50, 50, 62)
 		local stroke = buttons[savedQuality]:FindFirstChild("ButtonStroke")
@@ -686,7 +685,7 @@ task.delay(2, function()
 		if stroke then stroke.Thickness = 2 end
 		if indicator then indicator.Visible = true end
 	end
-	
+
 	statusLabel.Text = "Active: " .. savedQuality
 end)
 
@@ -714,9 +713,10 @@ end)
 
 print("═══════════════════════════════════════")
 print("🎮 Performance Settings v3.5 Loaded")
+print("👤 Author: ItoRenz00")
 print("📱 Platform: " .. (isMobile and "Mobile" or "Desktop"))
 print("⭐ Default Quality: Cinematic")
-print("📋 Button Order: Low → Medium → High → Cinematic")
+print("📋 Button Order: Cinematic → High → Medium → Low")
 print("✨ Enhanced UI with color-coded indicators")
 print("⚡ Smooth animations and hover effects")
 print("═══════════════════════════════════════")
